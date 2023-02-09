@@ -31,7 +31,6 @@ bp3本身并不存储数据，而是对接百度网盘，完全使用官方接�
 参考网站：
 
 - <a href="https://bp3.52dixiaowo.com" target="_blank">bp3官方demo站点</a>
-- [Windows系统镜像 | 高速下载 (okduang.com)](http://pan.okduang.com/)
 
 首页示例图：
 
@@ -83,18 +82,6 @@ bp3能够中转下载，或取得百度网盘直链（这里的直链，并非�
 
 在这里，由衷地感谢各位用户、开发者、赞助商对本项目给予的建议、帮助与支持。
 
-为了项目的良性发展，提出了以下思路：
-- 提供了QQ交流群：1150064636。你可以在群里获得一些帮助。如果通过其他渠道，即使是github发布issue，也因为网络缓慢无法及时回复【本仓库Github和Gitee双库同步，也可在Gitee求职】。
-- 如果你是小白，可付费9.9元，一年内安装部署升级提供技术服务，确保100%能使用，无需焦头烂额自己琢磨，节省时间或许是你想要的。
-- 现有功能不满足，可提供建议并等待更新，或付费以快速定制功能。即使和 bp3 无关，也可以在群里寻求付费技术支持。
 
--- 支持我们，任意一种或多种方式，①分享本项目给好友，②点赞项目，③加群给群主发红包等方式【这里就不放赞助二维码了】，完。
 
-特别赞助：
-
-<div align="center"><a href="https://www.kumanyun.com/"><img alt="huoniao" src="https://user-images.githubusercontent.com/66166878/155361171-be2a7b63-b065-4257-807c-a54a98e6c069.png"></a></div>
-
-其他赞助：
-
-<div><a href="http://a.big2035.com"><img width="20%" alt="mb" src="https://user-images.githubusercontent.com/66166878/155515884-4a8036a1-05d4-43e3-a821-95dcf3ba0978.jpg"></a> <a href="https://coresns.com/"><img width="20%" alt="coresns" src="https://user-images.githubusercontent.com/66166878/175356167-bc9d1b9b-b8be-435f-a49a-60fe222c3eb8.jpg" alt=""></a></div>
 
