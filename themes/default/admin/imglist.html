@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>bp3相册 | {#$path#}</title>
+    <style>
+        .fileicon {
+            width: 156px;
+            height: 156px;
+            display: inline-block;
+            opacity: 1;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size:200px;
+            margin: 0px 10px 10px 0px;
+        }
+    </style>
+
+    {#$favicon#}
+
+    {#'/css/bootstrap.min.css'|addCss#}
+    {#'/css/bootstrap-dialog.min.css'|addCss#}
+    {#'/fonts/font-awesome-4.7.0/css/font-awesome.min.css'|addCss#}
+
+    {#'/js/jquery.min.js'|addJs#}
+    {#'/js/bootstrap.min.js'|addJs#}
+    {#'/js/functions.js'|addJs#}
+    {#'/js/bootstrap-dialog.min.js'|addJs#}
+
+</head>
+<body>
+
+<h2>
+    {#if $firstPage#}<a href="?page={#$firstPage#}&path={#$encPath#}&u={#$u#}">首页</a>{#/if#}
+    {#if $prePage#}<a href="?page={#$prePage#}&path={#$encPath#}&u={#$u#}">上一页</a>{#/if#}
+    <span>当前第 <b>{#$page#}</b> 页</span>
+    {#if $nextPage#}<a href="?page={#$nextPage#}&path={#$encPath#}&u={#$u#}">下一页</a>{#/if#}
+    <span id="backPage"></span>
+</h2>
+{#if !$filter#}<hr><p><b>提示：</b>当前目录没有任何图片</p>{#/if#}
+<hr>
+
+<div style="padding: 5px 10px;">
+    {#foreach from=$dataHouse key=k item=v#}
+    <p>{#$k#}</p>
+        {#foreach from=$v key=k2 item=v2#}
+        <div class='fileicon' item='{#$v2|json_encode#}' style="background-image: url('{#$v2.thumbs.url3#}');"></div>
+        {#/foreach#}
+    {#/foreach#}
+</div>
+
+<script>
+    $(".fileicon").contextmenu(function(){
+        var data = $(this).attr("item");
+        data = JSON.parse(data);
+        BootstrapDialog.show({
+            title: '消息',
+            message: `<div class="text-info"><p>图片名：${data.server_filename}</p><p>创建时间：${new Date(data.local_ctime).format("YYYY-mm-dd HH:mm:ss")}</p><p>修改时间：${new Date(data.local_mtime).format("YYYY-mm-dd HH:mm:ss")}</p><p>图片大小：${showFileSize(data.size)}</p><p>你想要？？？</p></div>`,
+            closable: true,
+            closeByBackdrop: false,
+            closeByKeyboard: false,
+            buttons: [{
+                label: "查看大图",
+                cssClass: 'btn-primary',
+                action: function (dialogRef) {
+                    window.open(data.thumbs.url3);
+                    dialogRef.close();
+                }
+            },{
+                label: "下载",
+                cssClass: 'btn-success',
+                action: function (dialogRef) {
+                    location.href="../dn.php?fsid="+data.fs_id+"&u={#$u#}";
+                }
+            },{
+                label: "删除",
+                cssClass: 'btn-danger',
+                action: function (dialogRef) {
+                    let path = data.path;
+                    let filelist = JSON.stringify([{"path":path}]);
+                    $.post("../controller/filemanager.php?method=delete&u={#$u#}",{"filelist":filelist},function(data){
+                        if(data.errno===0){
+                            dialogRef.getModalBody().html("<p class='text-success'>删除成功。</p>");
+                            lazy_reload();
+                        }else{
+                            dialogRef.getModalBody().html("<p class='text-danger'>删除失败。</p>");
+                        }
+                    },"json")
+                }
+            },{
+                label: '关闭消息',
+                action: function(dialogRef){
+                    dialogRef.close();
+                }
+            }]
+        });
+        return false;
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>{#$app_name#} | {#$app_subtitle#}</title>
+    <meta name="description"
+          content="{#$app_description#}"/>
+    <meta name="keywords"
+          content="{#$app_keywords#}"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {#$favicon#}
+
+    {#'/css/bootstrap.min.css'|addCss#}
+    {#'/css/bootstrap-dialog.min.css'|addCss#}
+    {#'/css/general.css'|addCss#}
+    {#'/fonts/font-awesome-4.7.0/css/font-awesome.min.css'|addCss#}
+
+
+    {#'/js/jquery.min.js'|addJs#}
+    {#'/js/bootstrap.min.js'|addJs#}
+    {#'/js/functions.js'|addJs#}
+    {#'/js/bootstrap-dialog.min.js'|addJs#}
+
+    <style>
+        .carousel .item {
+          {#if $isMobile#}
+            height: {#$config.MbarnerHeight|default:150#}px;
+          {#else#}
+            height: {#$config.barnerHeight|default:150#}px;
+          {#/if#}
+          background-color: #777;
+        }
+        .carousel-inner > .item > .barnerImg {
+          position: absolute;
+          top: 0;
+          left: 0;
+          {#if $isMobile#}
+            width: {#$config.MbarnerWidth|default:1200#}px;
+            height: {#$config.MbarnerHeight|default:150#}px;
+          {#else#}
+            width: {#$config.barnerWidth|default:1200#}px;
+            height: {#$config.barnerHeight|default:150#}px;
+          {#/if#}
+        }
+        .carousel-indicators{
+            margin-bottom: 3px;
+            bottom: 0px;
+        }
+        .carousel-indicators > li{
+            height: 7px;
+            width: 7px;
+        }
+        .carousel-indicators > li.active{
+            margin: 1px;
+            height: 7px;
+            width: 30px;
+        }
+        .carousel-caption{
+            padding-bottom: 10px !important;
+        }
+        .flexParent {
+            width: 100%;
+            display: flex;
+            flex-flow: row wrap;
+            align-content: flex-start;
+        }
+        
+        .flexChild10 {
+            display: block;
+            width: 10%;
+        }
+        .flexChild20 {
+            display: block;
+            width: 20%;
+        }
+        .breadcrumb>li{
+            display: inline;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body style="background-color: #eeeeee;background-image: url('{#$base_url#}/static/img/bg/asfalt-dark.png');">
+<div id="content">
+<header>
+    {#if !$hideIndexNavbar#}
+    <nav class="navbar navbar-default mb-0">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="./">{#$app_name#}</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="./">首页<i class="fa fa-home"></i></a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="{#$login_url#}?redirect={#$page_url_args|urlencode#}">{#if $check_login#}管理{#else#}登录{#/if#}<i class="fa fa-user-circle-o"
+                                                                               aria-hidden="true"></i></a></li>
+                    {#if $app_blog#}<li><a href="{#$app_blog#}">官博<i class="fa fa-rss"></i></a></li>{#/if#}
+                    {#if $app_github#}<li><a href="{#$app_github#}">github<i class="fa fa-github" aria-hidden="true"></i></a></li>{#/if#}
+                    {#if $config['control']['open_session']#}<li><a href="{#$base_url|cat:'/user/login.php'#}">免部署版<i class="fa fa-info-circle"
+                                                                             aria-hidden="true"></i></a></li>{#/if#}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {#/if#}
+    <div id="myheader" class="container-fluid px-0">
+        <div class="container jumbotron pb-4" style="padding-top:22px;{#if $hideIndexNavbar && $isMobile#}padding-top:0px;{#/if#}max-width:826px;background-color:#eeeeee;background-image:url({#$base_url#}/static/img/bg/bedge-grunge.png);">
+        	<div class="row clearfix">
+        		<div class="col-md-12 column {#if $hideIndexNavbar && $isMobile#}p-0{#/if#}">
+        			<div class="carousel slide" id="carousel-176051">
+        			    {#if count($barners)>1#}
+        				<ol class="carousel-indicators">
+        					{#foreach $barners as $barnerk => $barner#}
+            					<li class="{#if $barnerk==0#}active{#/if#}" data-slide-to="{#$barnerk#}" data-target="#carousel-176051">
+            					</li>
+        					{#/foreach#}
+        				</ol>
+        				{#/if#}
+        				<div class="carousel-inner">
+        				    {#foreach $barners as $barnerk => $barner#}
+        				        <div class="item {#if $barnerk==0#}active{#/if#}">
+        				            {#if $barner['link']#}
+        						        <img class="barnerImg cursor-pointer" onclick="window.open('{#$barner['link']#}')" src="{#$base_url#}{#$barner['path']#}"/>
+        						    {#else#}
+        						        <img class="barnerImg" alt="" src="{#$base_url#}{#$barner['path']#}"/>
+        				            {#/if#}
+        						    <div class="carousel-caption">
+        						        {#if $barner['link']#}
+        						        <a href="{#$barner['link']#}" target="_blank" style="color:white;text-decoration:none;">
+        						        	<p>
+        						        	    {#$barner['title']#}
+            							    </p>
+        						        </a>
+        						        {#else#}
+        						            <p style="color:white;text-decoration:none;">
+        						        	    {#$barner['title']#}
+            							    </p>
+        						        {#/if#}
+        						    </div>
+        					    </div>
+        				    {#/foreach#}
+        				</div> 
+        				{#if !$isMobile && count($barners)>1#}
+        				    <a class="left carousel-control" href="#carousel-176051" data-slide="prev"><span class="glyphicon glyphicon-chevron-left"></span></a> <a class="right carousel-control" href="#carousel-176051" data-slide="next"><span class="glyphicon glyphicon-chevron-right"></span></a>
+        				{#/if#}
+        			</div>
+        		</div>
+        	</div>
+        	{#if $config.siteNotice#}
+            <div class="row clearfix">
+                <div class="col-xs-12 py-1">
+                    <div style="display:flex;">
+                        <span class="fa fa-volume-down" style="color:#FF3366;line-height:20px;font-weight:700;margin-right:2px;align-items:center;"></span>
+                        <marquee data-v-2525d01d="" onmouseout="this.start()" onmouseover="this.stop()">
+                        {#if $config.siteNoticeLink|default:''#}
+                            <a href="{#$config.siteNoticeLink#}" target="_blank" style="color:#FF3366;font-size:12px !important;font-weight:700;">{#$config.siteNotice#}</a>
+                        {#else#}
+                            <span style="color:#FF3366;font-size:12px !important;font-weight:700;">{#$config.siteNotice#}</span>
+                        {#/if#}
+                        </marquee>
+                    </div>
+                </div>
+            </div>
+            {#/if#}
+            {#if $allDirs_count>1#}
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="mb-3 flexParent">
+                            <!-- 页面 -->
+                            {#foreach $pageList as $pageIndex => $pageItem#}
+                                <a href="?tag={#$pageIndex#}&tagType=page" class="{#if $isMobile#}flexChild20{#else#}flexChild10{#/if#} {#if $tagType=='page' && $tag=={#$pageIndex#}#}text-success{#/if#}"><span style="display:flex;flex-direction:column;align-items:center;"><img src="{#$pageItem.icon#}" style="max-width:35px;max-height:35px;"></img><span style="font-size:13px;text-align:center;white-space:nowrap;overflow:hidden;display:block;max-width:100%;text-overflow:ellipsis;">{#$pageItem.name#}</span></span></a>
+                            {#/foreach#}
+                            <!-- 普通目录列表 -->
+                            {#foreach $allPredirs as $uu => $tt#}
+                                {#foreach $tt as $k=>$v#}
+                                <a href="?u={#$uu#}&tag={#$k+1#}" class="{#if $isMobile#}flexChild20{#else#}flexChild10{#/if#} {#if $tagType=='dir' && $u==$uu && $tag==$k+1#}text-success{#/if#}"><span style="display:flex;flex-direction:column;align-items:center;"><img src="{#$v.icon#}" style="max-width:35px;max-height:35px;"></img><span style="font-size:12px;text-align:center;white-space:nowrap;overflow:hidden;display:block;max-width:100%;text-overflow:ellipsis;">{#$v.name#}</span></span></a>
+                                {#/foreach#}
+                            {#/foreach#}
+                            
+                            <!-- 链接 -->
+                            {#foreach $linkList as $linkItem#}
+                                <a href="{#$linkItem['url']#}" target="{#$linkItem['target']#}" class="{#if $isMobile#}flexChild20{#else#}flexChild10{#/if#}"><span style="display:flex;flex-direction:column;align-items:center;"><img src="{#$linkItem['icon']#}" style="max-width:35px;max-height:35px;"></img><span style="font-size:12px;text-align:center;white-space:nowrap;overflow:hidden;display:block;max-width:100%;text-overflow:ellipsis;">{#$linkItem['title']#}</span></span></a>
+                            {#/foreach#}
+                        </div>
+                    </div>
+                </div>
+            {#/if#}
+            {#if $tagType=='dir'#}
+                {#if $nav_count>0#}
+                <div class="row {#if $allDirs_count<=1#}mt-4{#/if#}">
+                    <div class="col-xs-12">
+                        <ol class="breadcrumb mb-4">
+                            <li><a href='./?tag={#$tag#}&u={#$u#}'>Home</a></li>
+                            {#foreach from=$nav key=k item=v#}
+                                <li><a href='?dir={#$v["enc"]#}&tag={#$tag#}&u={#$u#}&recursion={#$recursion#}' class="{#if $k==$nav_count-1 #}text-success{#/if#}">{#$v["name"]#}</a></li>
+                            {#/foreach#}
+                        </ol>
+                    </div>
+                </div>
+                {#/if#}
+                <form>
+                    <div class="row {#if $allDirs_count<=1 && $nav_count<1 #}mt-4{#/if#}">
+                        <div class="col-xs-12">
+                            <div class="search-wraper" role="search">
+                                <div class="input-group">
+                                    <div title="根目录" class="input-group-addon" style="padding:0px;"><a href="{#$base_url#}?u={#$u#}&tag={#$tag#}"><div style="margin:6px 12px;"><i class="fa fa-map-marker"></i></div></a></div>
+                                    <input id="search" type="text" name="s" class="form-control"
+                                           placeholder="{#if $key#}正在搜索：{#$key#}{#else#}搜索文件{#/if#}"
+                                           required="required" autocomplete="off" onkeyup="this.value=this.value.replace(/[ ]/g,'')">
+                                    <input type="hidden" name="tag" value="{#$tag#}">
+                                    <input type="hidden" name="u" value="{#$u#}">
+                                    <input type="hidden" name="dir" value="{#$dir#}">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default" type="submit" title="搜索"><i class="fa fa-search" style="color:rgb(1,128,157);"></i></button>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row pt-4" style="color:#889900">
+                                <div class="col-xs-12 col-md-4">
+                                    <label><input class="mgc mgc-circle" name="recursion" type="radio" value="2" {#if $recursion==2#}checked{#/if#}/>根目录全部</label>
+                                    <label><input class="mgc mgc-circle" name="recursion" type="radio" value="1" {#if $recursion==1#}checked{#/if#}/>当前全部</label>
+                                </div>
+                                {#if $db==1#}
+                                <div class="col-xs-12 col-md-4">
+                                    <label><input class="mgc mgc-circle" name="fileType" type="radio" value="1" {#if $fileType==1#}checked{#/if#}/>全部</label>
+                                    <label><input class="mgc mgc-circle" name="fileType" type="radio" value="2" {#if $fileType==2#}checked{#/if#}/>文件夹</label>
+                                    <label><input class="mgc mgc-circle" name="fileType" type="radio" value="3" {#if $fileType==3#}checked{#/if#}/>文件</label>
+                                </div>
+                                <div class="col-xs-12 col-md-4">
+                                    <label><input class="mgc mgc-circle" name="orderType" type="radio" value="1" {#if $orderType==1#}checked{#/if#}/>默认</label>
+                                    <label><input class="mgc mgc-circle" name="orderType" type="radio" value="2" {#if $orderType==2#}checked{#/if#}/>名称</label>
+                                    <label><input class="mgc mgc-circle" name="orderType" type="radio" value="3" {#if $orderType==3#}checked{#/if#}/>最新</label>
+                                </div>
+                                {#/if#}
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            {#/if#}
+        </div>
+    </div>
+</header>
+<main class="mb-0">
+    <div class="container" style="max-width:826px;background-color:#eeeeee;background-image:url({#$base_url#}/static/img/bg/bedge-grunge.png)">
+        {#if $tagType=='dir'#}
+        <table class="table table-bordered table-responsive">
+            {#if $data['list']==null #}
+            <div class="p-4">这儿似乎什么也没有...</div>
+            {#else#}
+            <thead class='active'>
+            <tr>
+                <th></th>
+                <th>文件<i class='glyphicon glyphicon-chevron-down'></i></th>
+                <th>时间<i class='glyphicon glyphicon-chevron-down'></i></th>
+                <th>大小<i class='glyphicon glyphicon-chevron-down'></i></th>
+                <th>下载<i class='glyphicon glyphicon-chevron-down'></i></th>
+            </tr>
+            </thead>
+            <tbody>
+            {#foreach from=$data['list'] key=k item=v#}
+            <tr>
+                {#if $v['isdir']==1 #}
+                <td style="width:50px;">
+                    <img src="{#$base_url#}/static/img/icon/folder.png" width="30px">
+                </td>
+                <td class="info" colspan="4"><a href="?dir={#$v['encode_path']#}&tag={#$tag#}&u={#$u#}&recursion={#$recursion#}" style="display:block">
+                    {#if $key#}{#$v['path']#}{#else#}{#$v['server_filename']#}{#/if#} <span class="pull-right">{#$v['server_mtime']|date_format:'Y-m-d H:i:s'#}&nbsp;&nbsp;&nbsp;&nbsp;</span></a>
+                </td>
+                {#else#}
+                <td style="width:50px;">
+                    {#if $v['thumbs']|default:0#}
+                        <a onclick="showImg('{#$v['server_filename']#}',{#$k#})" icon="{#$v['icon']#}" tit="{#$v['server_filename']#}" nid="{#$k#}" href="javascript:;" class="hasImg" nhref="{#$v['thumbs'].url3#}"><img src="{#$v['thumbs'].url3#}" width="30px" style="max-height:30px;" onerror="this.src='{#$v['icon']#}';$(this).parent().removeAttr('href');$(this).parent().removeAttr('nhref');$(this).parent().removeClass('hasImg');"></a>
+                    {#else#}
+                        <img src="{#$v['icon']#}" width="30px">
+                    {#/if#}
+                </td>
+                <td>{#$v['server_filename']#}{#if $key#} <span tip="{#$v['title']#}" uk="{#$v['uk']#}" class="tip fa fa-question-circle-o" style="color:#0d6efd;"></span>{#/if#}</td>
+                <td>{#$v['server_mtime']|date_format:'Y-m-d H:i:s'#}</td>
+                <td>{#$v['show_size']#}</td>
+                <td>
+                    <div class="{#if $isMobile#}btn-group-vertical{#else#}btn-group{#/if#} text-center">
+                        {#if $check_login || !$close_dload#}
+                            <a title="下载" class="btn" href="{#$base_url#}/dn.php?fsid={#$v['fs_id']#}&u={#$v['uk']#}"><i class="fa fa-download"></i></a>
+                        {#/if#}
+                        {#if $check_login || !$close_dlink#}
+                            <a title="直链" class="btn" href="{#$base_url#}/admin/dlink.php?fsid={#$v['fs_id']#}&u={#$v['uk']#}" onclick="setPage()"><i class="fa fa-link"></i></a>
+                        {#/if#}
+                        {#if !$check_login && $close_dload && $close_dlink#}
+                            <a title="下载" class="btn" href="{#$base_url#}/advertisement.php?fsid={#$v['fs_id']#}&u={#$v['uk']#}"><i class="fa fa-download"></i></a>
+                        {#/if#}
+                    </div>
+                </td>
+                {#/if#}
+            </tr>
+            {#/foreach#}
+            {#/if#}
+        </table>
+        <div class="row">
+            <nav class="text-center">
+                <ul id="navigation-page" class="pagination">
+                </ul>
+            </nav>
+        </div>
+        {#elseif $tagType=='page'#}
+            {#$pageContent#}
+        {#/if#}
+    </div>
+</main>
+</div>
+
+<footer id="footer" class="copyright">
+    <div class="navbar navbar-default navbar-inverse">
+        <p class="text-center" style="color:#9d9d9d;margin-top:15px;">Copyright © {#$app_name#} {#$year#}</p>
+    </div>
+</footer>
+<a onclick="toUp()" title="返回顶部" id="back-to-top"
+   style="display:none;position:fixed;{#if $isMobile#}left:30px;bottom:30px;{#else#}right:60px;bottom:60px;{#/if#}background-color:rgb(255,255,255);border-radius: 50%;box-sizing: border-box;cursor:pointer;text-align:center;"><i
+        class="fa fa-search"
+        style="height:50px;width:50px;display:inline-block;line-height:50px;color:rgb(1,128,157);font-size: 1.2em;"></i></a>
+<style>
+    td {
+        word-break: break-all;
+        min-width: 55px;
+    }
+    
+    button{
+        outline:none !important;
+    }
+
+    .jumbotron {
+        margin-bottom: 0px;
+    }
+
+    main {
+        margin-bottom: 20px;
+    }
+
+    .copyright, .navbar-inverse {
+        margin-bottom: 0px;
+        border: 0px;
+    }
+
+    .tip {
+        cursor: pointer;
+    }
+</style>
+<script>
+    
+    var allImgs = []; //图片集合
+    let currentImgIndex = 0; //当前图片
+    
+    let leftIcon = '<svg t="1673531627187" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3604" width="32" height="32"><path d="M512 149.333333c200.298667 0 362.666667 162.368 362.666667 362.666667s-162.368 362.666667-362.666667 362.666667S149.333333 712.298667 149.333333 512 311.701333 149.333333 512 149.333333z m42.666667 168.085334L360.085333 512 554.666667 706.581333 599.914667 661.333333l-149.333334-149.333333 149.333334-149.333333L554.666667 317.418667z" fill="#007FFC" p-id="3605"></path></svg>';
+    let rightIcon = '<svg t="1673531530226" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2685" width="32" height="32"><path d="M512 149.333333c200.298667 0 362.666667 162.368 362.666667 362.666667s-162.368 362.666667-362.666667 362.666667S149.333333 712.298667 149.333333 512 311.701333 149.333333 512 149.333333z m-42.666667 168.085334L424.085333 362.666667l149.333334 149.333333-149.333334 149.333333L469.333333 706.581333 663.914667 512 469.333333 317.418667z" fill="#007FFC" p-id="2686"></path></svg>';
+    
+    function showImg($title,index){
+        let $url = $(event.target).parent().parent().find("a").attr("nhref");
+        if(!$url || $url.length==0){
+            return;
+        }
+        //计算是否有上一张图，和是否有下一张图
+        //找出当前图片在列表中的位置
+        for(let i=0;i<allImgs.length;i++){
+            if(allImgs[i].index==index){
+                currentImgIndex = i;
+                break;
+            }
+        }
+        let newHtml = '<div style="position:relative;"><img id="showCurrentImg" src="'+$url+'" width="100%" height="100%"/>'
+        if(currentImgIndex!=0){
+            newHtml += '<div id="showPrevImg" style="position:absolute;top: 45%;transform: translate(0,-45%);left:0px;cursor:pointer;color:white;font-size:2em;" onclick="changeShowImg(1)">'+leftIcon+'</i></div>';
+        }else{
+            newHtml += '<div id="showPrevImg" style="position:absolute;top: 45%;transform: translate(0,-45%);left:0px;cursor:pointer;color:white;font-size:2em;display:none;" onclick="changeShowImg(1)">'+leftIcon+'</div>';
+        }
+        if(currentImgIndex<allImgs.length-1){
+            newHtml += '<div id="showNextImg" style="position:absolute;top: 45%;transform: translate(0,-45%);right:0px;cursor:pointer;color:white;font-size:2em;" onclick="changeShowImg(2)">'+rightIcon+'</div>';
+        }else{
+            newHtml += '<div id="showNextImg" style="position:absolute;top: 45%;transform: translate(0,-45%);right:0px;cursor:pointer;color:white;font-size:2em;display:none;" onclick="changeShowImg(2)">'+rightIcon+'</div>';
+        }
+        newHtml += "</div>";
+        
+        BootstrapDialog.show({
+            title: $title,
+            message: newHtml,
+            closable: true,
+            closeByKeyboard: false
+        });
+        
+    }
+    
+    //切换显示图片
+    function changeShowImg(dir){
+        if(dir==1){
+            let loadHasImg = $(".hasImg[nid="+(allImgs[currentImgIndex-1].index)+"]").attr("nid");
+            if(loadHasImg){
+                $("#showCurrentImg").attr("src",allImgs[currentImgIndex-1].url);
+            }else{
+                $("#showCurrentImg").attr("src",allImgs[currentImgIndex-1].icon);
+            }
+            currentImgIndex--;
+        }else{
+            let loadHasImg = $(".hasImg[nid="+(allImgs[currentImgIndex+1].index)+"]").attr("nid");
+            if(loadHasImg){
+                $("#showCurrentImg").attr("src",allImgs[currentImgIndex+1].url);
+            }else{
+                $("#showCurrentImg").attr("src",allImgs[currentImgIndex+1].icon);
+            }
+            currentImgIndex++;
+        }
+        //切换标题
+        $(".bootstrap-dialog-title").text(allImgs[currentImgIndex].title);
+        //删除和恢复上一张
+        if(currentImgIndex==0){
+            $("#showPrevImg").hide();
+        }else{
+            $("#showPrevImg").show();
+        }
+        //删除和恢复下一张
+        if(currentImgIndex>=allImgs.length-1){
+            $("#showNextImg").hide();
+        }else{
+            $("#showNextImg").show();
+        }
+    }
+    
+
+    $('#carousel-176051').carousel('cycle');
+    $(function () {
+        // 获取手指在轮播图元素上的一个滑动方向（左右）
+        // 获取界面上轮播图容器
+        var $carousels = $('.carousel');
+        var startX,endX;
+        // 在滑动的一定范围内，才切换图片
+        var offset = 60;
+        // 注册滑动事件
+        $carousels.on('touchstart',function (e) {
+            // 手指触摸开始时记录一下手指所在的坐标x
+            startX = e.originalEvent.touches[0].clientX;
+        });
+        $carousels.on('touchmove',function (e) {
+            // 目的是：记录手指离开屏幕一瞬间的位置 ，用move事件重复赋值
+            endX = e.originalEvent.touches[0].clientX;
+        });
+        $carousels.on('touchend',function (e) {
+            //console.log(endX);
+            //结束触摸一瞬间记录手指最后所在坐标x的位置 endX
+            //比较endX与startX的大小，并获取每次运动的距离，当距离大于一定值时认为是有方向的变化
+            var distance = Math.abs(startX - endX);
+            if (distance > offset){
+                //说明有方向的变化
+                //根据获得的方向 判断是上一张还是下一张出现
+                $(this).carousel(startX >endX ? 'next':'prev');
+            }
+            offset = 60;
+            startX = 0;
+            endX = 0;
+        })
+    });
+    $(function () {
+        const height = $("#footer").height();
+        $("#content").css("min-height",(document.documentElement.clientHeight-height)+'px');
+        let pageInfo = '{#$pageInfo#}';
+        pageInfo = JSON.parse(pageInfo);
+        if(pageInfo){
+            navigationPage(pageInfo);
+        }
+        //获取所有的图片
+        let imgs = $(".hasImg");
+        for(let i=0;i<imgs.length;i++){
+            allImgs.push({"index":imgs[i].getAttribute("nid"),"title":imgs[i].getAttribute("tit"),"url":imgs[i].getAttribute("nhref"),"icon":imgs[i].getAttribute("icon")});
+        }
+    })
+    function toUp(){
+        $('html,body').animate({scrollTop:0}, 1000)
+        let search_box = $("#search");
+        search_box.focus();
+    }
+    $(window).scroll(function () {
+        let scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        if (scrollTop > 50) {
+            $("#back-to-top").css("display", "block");
+        } else {
+            $("#back-to-top").css("display", "none");
+        }
+    });
+    // 提示完整目录
+    $(".tip").click(function () {
+        
+        let path = $(this).attr("tip");
+        let uk = $(this).attr("uk");
+        let paths = path.split("/");
+        let links = "";
+        let currentPath = "";
+        for(let i=1;i<paths.length-1;i++){
+            let query = getQuery();
+            currentPath += "/"+paths[i];
+            query.dir = currentPath;
+            Reflect.deleteProperty(query,"s");
+            query.u = uk;
+            let search = makeQuery(query);
+            let item = `<span class='text-muted'>/</span> <a href=?${search}>${paths[i]}</a>`;
+            links += item;
+        }
+        let lastName = path.substr(path.lastIndexOf("/"));
+        links += lastName;
+        
+        let str = "文件位置：&nbsp;&nbsp;"+links;
+        
+        BootstrapDialog.show({
+            title: '文件位置',
+            message: str,
+            closable: true,
+            closeByKeyboard: false
+        });
+    });
+    // 窗口事件代理
+    document.onkeydown = function(event) {
+        let e = event || window.event;
+        let keyCode = e.keyCode || e.which || e.charCode;
+        let ctrl = e.ctrlKey; // ctrl 
+        let alt = e.altKey; // alt
+        let shift = e.shiftKey; // shift
+        // console.log(keyCode);
+        if (event.keyCode == 81 && ctrl) { // ctrl+Q，定位搜索栏
+            $("#search").focus();
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>文件管理 | bp3</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {#$favicon#}
+
+    {#'/css/bootstrap.min.css'|addCss#}
+    {#'/css/bootstrap-dialog.min.css'|addCss#}
+    {#'/css/general.css'|addCss#}
+    {#'/fonts/font-awesome-4.7.0/css/font-awesome.min.css'|addCss#}
+
+    {#'/js/jquery.min.js'|addJs#}
+    {#'/js/bootstrap.min.js'|addJs#}
+    {#'/js/functions.js'|addJs#}
+    {#'/js/bootstrap-dialog.min.js'|addJs#}
+
+</head>
+<body style="background-color: #eeeeee;background-image: url('{#$base_url#}/static/img/bg/asfalt-dark.png');">
+<div id="content">
+<header >
+    <nav class="navbar navbar-default mb-0">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="./">管理系统</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                </ul>
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="./file.php">文件管理<i class="fa fa-th-large" aria-hidden="true"></i><span class="sr-only">(current)</span></a></li>
+                    <li><a href="./settings.php">修改设置<i class="fa fa-cog"></i></a></li>
+                    <li><a href="./help.php">帮助与支持<i class="fa fa-question-circle" aria-hidden="true"></i></a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../">前台<i class="fa fa-home"></i></a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{#$user#}<span class="fa fa-user-circle"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="./logout.php"><i class="fa fa-sign-out" aria-hidden="true"></i> 注销</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div id="myheader" class="container-fluid px-0">
+        <div class="container jumbotron pb-4" style="margin-bottom: 0px;padding-top:22px;max-width:826px;background-color:#eeeeee;background-image:url({#$base_url#}/static/img/bg/bedge-grunge.png);">
+            {#if $config.useDb#}
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="mb-4">
+                        <a class="{#if $db==1#}text-success{#/if#}" href="?dir={#$enc_dir#}&u={#$u#}&tag={#$tag#}&db=1">使用数据库</a>
+                        <a class="{#if $db!=1#}text-success{#/if#}" href="?dir={#$enc_dir#}&u={#$u#}&tag={#$tag#}&db=2">远程请求</a>
+                        <span class="pull-right">
+                            <a href="#" title="功能开发中">数据同步</a>
+                            <a href="#" title="功能开发中">高级搜索</a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {#/if#}
+            {#if $us_count>1#}
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="mb-4">
+                        {#foreach $us as $k=>$v#}
+                        <a href="?u={#$k#}&db={#$db#}" class="mr-3 {#if $u==$k#}text-success{#/if#}">{#$v#}</a>
+                        {#/foreach#}
+                    </div>
+                </div>
+            </div>
+            {#/if#}
+            {#if $tags_count>1#}
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="mb-4">
+                        {#foreach $tags as $k=>$v#}
+                        <a href="?tag={#$k+1#}&u={#$u#}&db={#$db#}" class="mr-3 {#if $tag==$k+1#}text-success{#/if#}">{#$v#}</a>
+                        {#/foreach#}
+                    </div>
+                </div>
+            </div>
+            {#/if#}
+            <div class="row">
+                <div class="col-xs-12" style="margin-bottom: 10px;">
+                <div class="btn-group">
+                    {#if $dir#}
+                    <a target="_blank" href="{#$config.baidu.listPre#}{#$dir|urlencode#}" class="btn btn-default btn-sm">网盘目录</a>
+                    <button class="btn btn-default btn-sm" onclick="mkdir()">新文件夹</button>
+                    {#elseif $key#}
+                    <a target="_blank" href="{#$config.baidu.searchPre#}{#$key|urlencode#}" class="btn btn-default btn-sm">网盘搜索</a>
+                    {#/if#}
+                </div>
+                <div class="btn-group pull-right">
+                    <a class="btn btn-default btn-sm" id="rename">重命名</a>
+                    <a class="btn btn-default btn-sm" id="delete">删除</a>
+                </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <ol class="breadcrumb">
+                        <li><a href='./file.php?dir=%2F&tag={#$tag#}&u={#$u#}&db={#$db#}'>Home</a></li>
+                        {#foreach from=$nav key=k item=v#}
+                        <li><a href='?dir={#$v["enc"]#}&tag={#$tag#}&u={#$u#}&db={#$db#}'>{#$v["name"]#}</a></li>
+                        {#/foreach#}
+                    </ol>
+                </div>
+            </div>
+            <form>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="search-wraper" role="search">
+                            <div class="input-group">
+                                <input type="text" name="s" class="form-control"
+                                       placeholder="{#if $key#}正在搜索：{#$key#}{#else#}搜索文件{#/if#}"
+                                       required="required" onkeyup="this.value=this.value.replace(/[ ]/g,'')">
+                                <input type="hidden" name="tag" value="{#$tag#}">
+                                <input type="hidden" name="u" value="{#$u#}">
+                                <input type="hidden" name="db" value="{#$db#}">
+                                <input type="hidden" name="dir" value="{#$dir#}">
+                                <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit" title="搜索"><i class="fa fa-search" style="color:rgb(1,128,157);"></i></button>
+                          </span>
+                            </div>
+                        </div>
+                        <div class="row pt-4" style="color:#889900">
+                        <div class="col-xs-12 col-md-4">
+                            <label><input class="mgc mgc-circle" name="recursion" type="radio" value="2" {#if $recursion==2#}checked{#/if#}/>根目录全部</label>
+                            <label><input class="mgc mgc-circle" name="recursion" type="radio" value="1" {#if $recursion==1#}checked{#/if#}/>当前全部</label>
+                        </div>
+                        {#if $db==1#}
+                        <div class="col-xs-12 col-md-4">
+                            <label><input class="mgc mgc-circle" name="fileType" type="radio" value="1" {#if $fileType==1#}checked{#/if#}/>查询全部</label>
+                            <label><input class="mgc mgc-circle" name="fileType" type="radio" value="2" {#if $fileType==2#}checked{#/if#}/>文件夹</label>
+                            <label><input class="mgc mgc-circle" name="fileType" type="radio" value="3" {#if $fileType==3#}checked{#/if#}/>文件</label>
+                        </div>
+                        <div class="col-xs-12 col-md-4">
+                            <label><input class="mgc mgc-circle" name="orderType" type="radio" value="1" {#if $orderType==1#}checked{#/if#}/>默认</label>
+                            <label><input class="mgc mgc-circle" name="orderType" type="radio" value="2" {#if $orderType==2#}checked{#/if#}/>名称</label>
+                            <label><input class="mgc mgc-circle" name="orderType" type="radio" value="3" {#if $orderType==3#}checked{#/if#}/>最新</label>
+                        </div>
+                        {#/if#}
+                    </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</header>
+<main>
+    <div class="container" style="max-width:826px;background-color:#eeeeee;background-image:url({#$base_url#}/static/img/bg/bedge-grunge.png)">
+        <table class="table table-bordered table-responsive">
+            {#if $data['list']==null #}
+            这儿似乎什么也没有...
+            {#else#}
+            <thead class='active'>
+            <tr class="active">
+                <th><input type="checkbox" id="checkall"></th>
+                <th>文件<i class='glyphicon glyphicon-chevron-down'></i></th>
+                <th>大小<i class='glyphicon glyphicon-chevron-down'></i></th>
+                <th>时间<i class='glyphicon glyphicon-chevron-down'></i></th>
+                <th>操作<i class='glyphicon glyphicon-chevron-down'></i></th>
+            </tr>
+            </thead>
+            <tbody>
+            {#foreach from=$data['list'] key=k item=v#}
+            <tr>
+                <th><input type="checkbox" name="item" data-path="{#$v['path']#}"></th>
+                {#if $v['isdir']==1 #}
+                <td class="info" colspan="3"><a href="?dir={#$v['encode_path']#}&tag={#$tag#}&u={#$u#}&recursion={#$recursion#}" style="display:block">
+                    {#if $key#}{#$v['path']#}{#else#}{#$v['server_filename']#}{#/if#} <span class="pull-right">{#$v['server_mtime']|date_format:'Y-m-d H:i:s'#}&nbsp;&nbsp;&nbsp;&nbsp;</span></a>
+                </td>
+                <td>
+                    <a class="cursor-pointer"><i class="fa fa-tree" onclick='checkTree("{#$base_url#}/admin/tree.php?base_dir={#$v.encode_path#}&u={#$u#}&db={#$db#}")' title="资源树"></i></a>&nbsp;
+                    <a class="cursor-pointer"><i class="fa fa-picture-o" aria-hidden="true" title="提取图片" onclick="setPage();location.href='{#$base_url#}/admin/imglist.php?path={#$v.encode_path#}&u={#$u#}'"></i></a>&nbsp;
+                    {#if $v['path']!='/apps'#}
+                    <a class="cursor-pointer"><i class="fa fa-pencil" aria-hidden="true" path="{#$v['path']#}" title="重命名" onclick='rename(event)'></i></a>&nbsp;
+                    <a class="cursor-pointer"><i class="fa fa-trash" style="color: rgb(204, 34, 17);" aria-hidden="true" path="{#$v['path']#}" title="删除" onclick='del(event)'></i></a>
+                    {#/if#}
+                </td>
+                {#else#}
+                <td class="br"><i class="glyphicon glyphicon-file"></i> {#$v['server_filename']#}{#if $key#} <span tip="{#$v['title']#}" class="tip fa fa-question-circle-o" style="color:#0d6efd;"></span>{#/if#}</td>
+                <td class="br">{#$v['show_size']#}</td>
+                <td class="br">{#$v['server_mtime']|date_format:'Y-m-d H:i:s'#}</td>
+                <td>
+                    <a href="{#$base_url#}/dn.php?fsid={#$v['fs_id']#}&u={#$u#}"><i class="fa fa-download" title="下载"></i></a>&nbsp;
+                    <a onclick="setPage()" href="{#$base_url#}/admin/dlink.php?fsid={#$v['fs_id']#}&u={#$u#}"><i class="fa fa-link" title="直链"></i></a>&nbsp;
+                    <a class="cursor-pointer" path="{#$v['title']#}" onclick='rename(event)'><i class="fa fa-pencil"></i></a>&nbsp;
+                    <a class="cursor-pointer" path="{#$v['title']#}" onclick='del(event)'><i class="fa fa-trash" title="删除" style="color: rgb(204, 34, 17);"></i></a>
+                </td>
+                {#/if#}
+            </tr>
+            {#/foreach#}
+            {#/if#}
+        </table>
+        <div class="row">
+            <nav class="text-center">
+                <ul id="navigation-page" class="pagination">
+                </ul>
+            </nav>
+        </div>
+    </div>
+</main>
+</div>
+<footer id="footer">
+    <div class="copyright navbar navbar-default navbar-inverse">
+        <p class="text-center" style="color:#9d9d9d;margin-top:15px;">Copyright © {#$app_name#} {#$year#}</p>
+    </div>
+</footer>
+<a href="javascript:$('html,body').animate({scrollTop:0}, 1000);" title="返回顶部" id="back-to-top"
+   style="display:none;position:fixed;{#if $isMobile#}left:20px;{#else#}right:20px;{#/if#}bottom:10px;background-color:rgb(95,99,104);box-sizing: border-box;cursor:pointer;text-align:center;"><i
+        class="fa fa-angle-up"
+        style="height:40px;width:40px;display:inline-block;line-height:40px;color:#fff;"></i></a>
+<style>
+    td {
+        word-break: break-all !important;
+        min-width: 55px;
+    }
+    .dropdown:hover .dropdown-menu {
+		display: block;
+	}
+	button{
+	    outline: none !important;
+	}
+    .copyright{
+        margin-bottom: 0px;
+    }
+    .tip{
+        cursor: pointer;
+    }
+    .breadcrumb>li{
+        display: inline;
+        word-break: break-all;
+    }
+</style>
+<script>
+    $(function () {
+        const height = $("#footer").height();
+        $("#content").css("min-height",(document.documentElement.clientHeight-height)+'px');
+        let pageInfo = '{#$pageInfo#}';
+        pageInfo = JSON.parse(pageInfo);
+        if(pageInfo){
+            navigationPage(pageInfo);
+        }
+    })
+    $(window).scroll(function(){
+        let scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        if(scrollTop>50){
+            $("#back-to-top").css("display","block");
+        }else{
+            $("#back-to-top").css("display","none");
+        }
+    });
+    // 删除文件
+    function del(e){
+        let check = confirm("短期内可在百度网盘app回收站找回，请确认删除：");
+        if(check){
+            let path = $(e.target).attr("path");
+            var filelist = JSON.stringify([{"path":path}]);
+            $.post("../controller/filemanager.php?method=delete&u={#$u#}",{"filelist":filelist},function(data){
+                if(data.errno===0){
+                    message("删除成功","success");
+                    setTimeout("location.reload()",200);
+                }else{
+                    message("删除失败","error");
+                }
+            },"json")
+        }
+    }
+    // 单个文件重命名
+    function rename(e){
+        let name = prompt("请输入文件新名称");
+        if(!name){
+            message("未输入名称","error");
+            return;
+        }
+        name = name.trim();  // 前后不可有空格
+        if(name==""){
+            message("未输入名称","error");
+            return;
+        }
+        if(name.length>255){
+            message("名称不可大于255字符","error");
+            return;
+        }
+        let path = $(e.target).attr("path");
+        var filelist = JSON.stringify([{"path":path,"newname":name}]);
+        $.post("../controller/filemanager.php?method=rename&u={#$u#}",{"filelist":filelist},function(data){
+            if(data.errno===0){
+                message("重命名成功","success");
+                setTimeout("location.reload()",200);
+            }else{
+                message("重命名失败","error");
+            }
+        },"json")
+    }
+    // 是否生成目录树
+    function checkTree(url){
+        BootstrapDialog.show({
+            title: '消息',
+            message: `<p class="text-info">生成资源目录树时，如果数据太大层级太深，会自动触发保护机制。</p>`,
+            closable: true,
+            closeByBackdrop: false,
+            closeByKeyboard: false,
+            buttons: [{
+                label: "生成资源树",
+                cssClass: 'btn-primary',
+                action: function (dialogRef) {
+                    setPage();
+                    window.location.href = url;
+                }
+            },{
+                label: '关闭消息',
+                action: function(dialogRef){
+                    dialogRef.close();
+                }
+            }]
+        });
+    }
+    // 提示完整目录
+    $(".tip").click(function () {
+        
+        let path = $(this).attr("tip");
+        let uk = $(this).attr("uk");
+        let paths = path.split("/");
+        let links = "";
+        let currentPath = "";
+        for(let i=1;i<paths.length-1;i++){
+            let query = getQuery();
+            currentPath += "/"+paths[i];
+            query.dir = currentPath;
+            Reflect.deleteProperty(query,"s");
+            query.u = uk;
+            let search = makeQuery(query);
+            let item = `<span class='text-muted'>/</span> <a href=?${search}>${paths[i]}</a>`;
+            links += item;
+        }
+        let lastName = path.substr(path.lastIndexOf("/"));
+        links += lastName;
+        
+        let str = "文件位置：&nbsp;&nbsp;"+links;
+        
+        BootstrapDialog.show({
+            title: '文件位置',
+            message: str,
+            closable: true,
+            closeByKeyboard: false
+        });
+    });
+    // 创建文件夹
+    function mkdir(){
+        let name = prompt("请输入文件夹名称");
+        if(!name){
+            message("未输入文件夹名称","error");
+            return;
+        }
+        name = name.trim();  // 前后不可有空格
+        if(name==""){
+            message("未输入文件夹名称","error");
+            return;
+        }
+        if(name.length>255){
+            message("文件夹名称不可大于255字符","error");
+            return;
+        }
+        for(let i=0;i<name.length;i++){
+            let char = name.charAt(i);
+
+            if(char ==':' || char== '<' || char=='>' || char=='|' || char=='*' || char=='?' || char=='/'){
+                message("不能包含字符:<>|*?/","error");
+                return;
+            }
+        }
+        $.post("../controller/mkdir.php",{"name":name,"path":"{#$dir#}","u":"{#$u#}"},function(data){
+            if(data.errno!=0){
+                message("文件夹创建失败","error");
+            }else{
+                message("文件夹创建成功","success");
+                setTimeout("location.reload()",200);
+            }
+        },"json");
+    }
+    // 全选
+    $("#checkall").click(function(){
+        $(":checkbox[name=item]").prop("checked",this.checked);
+    });
+    // 批量重命名
+    $("#rename").click(function () {
+        let paths = $(":checkbox[name=item]:checked");
+        if(paths.length <= 0){
+            message("未选择文件","error");
+            return;
+        }
+        let newname = prompt("请输入文件新名称，注：重命名成功不可撤销！");
+        if(!newname){
+            message("未输入名称","error");
+            return;
+        }
+        newname = newname.trim();  // 前后不可有空格
+        if(newname==""){
+            message("未输入名称","error");
+            return;
+        }
+        if(newname.length>255){
+            message("名称不可大于255字符","error");
+            return;
+        }
+        let filelist = [];
+        for(let i=0; i< paths.length; i++){
+            let path_i = $(paths[i]).data("path");
+            let filelist_i = {"path":path_i,"newname":newname};
+            filelist[i] = filelist_i;
+        }
+        let str_filelist = JSON.stringify(filelist);
+        $.post("../controller/filemanager.php?method=rename&u={#$u#}",{"filelist":str_filelist},function(data){
+            if(data.errno===0){
+                message("批量重命名成功","success");
+                setTimeout("location.reload()",200);
+            }else{
+                message("批量重命名失败","error");
+            }
+        },"json")
+    });
+    // 批量删除
+    $("#delete").click(function () {
+        let paths = $(":checkbox[name=item]:checked");
+        if(paths.length <= 0){
+            message("未选择文件","error");
+            return;
+        }
+        let check = confirm("确定要批量删除吗？");
+        if(!check){
+            message("批量删除取消","info");
+            return;
+        }
+        let filelist = [];
+        for(let i=0; i< paths.length; i++){
+            let path_i = $(paths[i]).data("path");
+            filelist[i] = path_i;
+        }
+        let str_filelist = JSON.stringify(filelist);
+        $.post("../controller/filemanager.php?method=delete&u={#$u#}",{"filelist":str_filelist},function(data){
+            if(data.errno===0){
+                message("批量删除成功","success");
+                setTimeout("location.reload()",200);
+            }else{
+                message("批量删除失败","error");
+            }
+        },"json")
+    });
+
+</script>
+</body>
+</html>

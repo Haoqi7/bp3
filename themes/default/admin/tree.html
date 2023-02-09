@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>资源树 | bp3</title>
+
+    {#$favicon#}
+
+    {#'/fonts/font-awesome-4.7.0/css/font-awesome.min.css'|addCss#}
+
+
+    {#'/js/jquery.min.js'|addJs#}
+    {#'/js/functions.js'|addJs#}
+
+    <style>
+        p{
+            margin: 0;
+            word-break: break-all;
+        }
+        .h2{
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        .h4{
+            margin-top: 10px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        p{
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+        }
+        h2,h4{
+            font-family: PingFang SC,Noto Sans,Helvetica Neue,Microsoft Yahei,Hiragino Sans GB,Microsoft Sans Serif,WenQuanYi Micro Hei,sans-serif;;
+        }
+        body{
+            white-space: nowrap;
+        }
+        #tree{
+            background-color: #ffffff;
+        }
+        #tip *{
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+<div id="tip">
+<p>本次记录数：{#$record#}，
+    {#if $has_more#}<span style="color: red">本次加载还有更多数据</span>{#else#}<span style="color: green">已全部加载</span>{#/if#}
+    ，最深层级：{#$max_dir#}{#if $is_beyond_deep#}， <span style="color: red">实际层级太深，部分数据被丢弃</span>{#/if#}，<button onclick="saveFile()">导出txt文本</button> {#if $record<1000#}<button id="expImg">导出png图片</button>{#/if#} <span id="backPage"></span></p>
+    <hr>
+</div>
+    <div id="tree">
+    <p class="h2">资源树：{#$lastPath#} [ {#$all_size|height_show_size#} ]</p>
+    {#foreach from=$data key=k item=v#}
+        {#if $k==$base_dir#}
+            {#if $v['list']|default:FALSE#}
+                {#foreach from=$v['list'] key=k2 item=v2#}
+                    <p>┣━━  &nbsp;{#$k2#} <b>[ {#$v2|height_show_size#} ]</b> </p>
+                {#/foreach#}
+            {#/if#}
+        {#else#}
+            {#if $v['deep']>2#}
+                <p class="h4">{#'┃&nbsp;&nbsp;&nbsp;&nbsp;'|str_repeat:($v['deep']-2)#}┣━━ &nbsp;{#$v['name']#} <b>[ {#$v['size']|height_show_size#} ]</b></p>
+            {#/if#}
+            {#if $v['list']|default:FALSE#}
+                {#foreach from=$v['list'] key=k2 item=v2#}
+                {#if $v['deep']>1#}
+                <p>{#'┃&nbsp;&nbsp;&nbsp;&nbsp;'|str_repeat:($v['deep']-1)#}┣━━  &nbsp;{#$k2#} <b>[ {#$v2|height_show_size#} ]</b> </p>
+                {#/if#}
+                {#/foreach#}
+            {#/if#}
+        {#/if#}
+    {#/foreach#}
+    <br>
+    </div>
+<a href="javascript:$('html,body').animate({scrollTop:0}, 1000);" title="返回顶部" id="back-to-top"
+   style="display:none;position:fixed;{#if $isMobile#}left:20px;{#else#}right:20px;{#/if#}bottom:10px;background-color:rgb(95,99,104);box-sizing: border-box;cursor:pointer;text-align:center;"><i
+        class="fa fa-angle-up"
+        style="height:40px;width:40px;display:inline-block;line-height:40px;color:#fff;"></i></a>
+
+    <script>
+        function saveFile() {
+            let data = document.getElementById("tree").innerText;
+            let fileName = "{#$lastPath#}.txt";
+            exportRaw(data,fileName);
+        }
+        function exportRaw(data, name) {
+            let urlObject = window.URL || window.webkitURL || window;
+            let export_blob = new Blob([data]);
+            let save_link = document.createElementNS("http://www.w3.org/1999/xhtml", "a")
+            save_link.href = urlObject.createObjectURL(export_blob);
+            save_link.download = name;
+            save_link.click();
+        }
+        $(window).scroll(function(){
+            let scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            if(scrollTop>50){
+                $("#back-to-top").css("display","block");
+            }else{
+                $("#back-to-top").css("display","none");
+            }
+        });
+    </script>
+<script>
+    // DOM转图片的方法
+    var domToImg = (function () {
+        // 转png需要的canvas对象及其上下文
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+
+        // canvas绘制图片元素方法
+        var draw = function (img) {
+            var width = img.width, height = img.height;
+            // canvas绘制
+            canvas.width = width;
+            canvas.height = height;
+            // 画布清除
+            context.clearRect(0, 0, width, height);
+            // 绘制图片到canvas
+            context.drawImage(img, 0, 0);
+        };
+
+        // canvas画布绘制的原图片
+        var img = new Image();
+        // 回调
+        var callback = function () {};
+
+        // 图片回调
+        img.onload = function () {
+            draw(this);
+            // 回调方法
+            callback();
+        };
+
+        var exports = {
+            dom: null,
+            // DOM变成svg，并作为图片显示
+            dom2Svg: function () {
+                var dom = this.dom;
+                if (!dom) {
+                    return this;
+                }
+
+                // 复制DOM节点
+                var cloneDom = dom.cloneNode(true);
+                cloneDom.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+
+                // 如果有图片，变成base64
+                var imgDom = null;
+                if (cloneDom.tagName.toLowerCase() == 'img') {
+                    imgDom = cloneDom;
+                } else {
+                    // 这里就假设一个图片，多图自己遍历转换下就好了
+                    imgDom = cloneDom.querySelector('img');
+                }
+
+                if (imgDom) {
+                    draw(imgDom);
+                    imgDom.src = canvas.toDataURL();
+                }
+
+                var htmlSvg = 'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="' + dom.offsetWidth + '" height="' + dom.offsetHeight + '"><foreignObject x="0" y="0" width="100%" height="100%">'+
+                    new XMLSerializer().serializeToString(cloneDom) +
+                    document.querySelector('style').outerHTML +
+                    '</foreignObject></svg>';
+
+                htmlSvg = htmlSvg.replace(/\n/g, '').replace(/\t/g, '').replace(/#/g, '%23');
+
+                // 图片地址显示为DOM转换的svg
+                img.src = htmlSvg;
+
+                return this;
+            },
+            download: function () {
+                // 创建隐藏的可下载链接
+                var eleLink = document.createElement('a');
+                // 下载图片文件名就按照时间戳来
+                eleLink.download = '{#$lastPath#}-' + (+new Date() + '').slice(1, 9) + '.png';
+                eleLink.style.display = 'none';
+
+                // 触发图片onload是个异步过程，因此，需要在回调中处理
+                callback = function () {
+                    eleLink.href = canvas.toDataURL();
+                    // 触发点击
+                    document.body.appendChild(eleLink);
+                    eleLink.click();
+                    // 然后移除
+                    document.body.removeChild(eleLink);
+                };
+
+                // dom变图片
+                this.dom2Svg();
+            }
+        };
+
+        return exports;
+    })();
+    // 实例页面的交互代码
+    var eleBox = document.getElementById('expImg');
+    // 点击并下载图片
+    eleBox.addEventListener('click', function (event) {
+        domToImg.dom = document.getElementById("tree");
+        domToImg.download();
+    });
+    // canvas.toDataURL() 得到空的 data:base64码的长度有个限制，这里直接判断记录小于1000则允许导出png
+</script>
+</body>
+</html>

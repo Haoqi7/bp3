@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>轮播广告设置 | bp3</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {#$favicon#}
+
+    {#'/css/bootstrap.min.css'|addCss#}
+    {#'/css/bootstrap-dialog.min.css'|addCss#}
+    {#'/css/general.css'|addCss#}
+    {#'/fonts/font-awesome-4.7.0/css/font-awesome.min.css'|addCss#}
+
+    {#'/js/jquery.min.js'|addJs#}
+    {#'/js/bootstrap.min.js'|addJs#}
+    {#'/js/functions.js'|addJs#}
+    {#'/js/clipboard.min.js'|addJs#}
+    {#'/js/bootstrap-dialog.min.js'|addJs#}
+    {#'/js/vue.min.js'|addJs#}
+    
+    <style>
+        .addon{
+            padding: 6px 12px;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1;
+            color: #555;
+            text-align: center;
+            background-color: #eee;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .addon-left{
+            border-right: 0px;
+        }
+        .addon-right{
+            border-left: 0px;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+    <br>
+    <h4>轮播广告设置
+        <button class="btn btn-primary" @click="save()">保存设置</button>
+        <span class="pull-right"> <a href="./settings.php">返回通用设置</a></span></h4>
+    <hr style="border: dashed">
+    
+    
+    <div class="row">
+        <div class="col-xs-3 fs-2">
+            图片尺寸(电脑端)
+        </div>
+        <div class="col-xs-9">
+            <div>
+                <span class="addon addon-left">宽</span><input v-model="barnerWidth" class="form-control" type="number" style="display:inline-block;width:100px;"/><span class="addon addon-right">px</span>
+                
+                &nbsp; x &nbsp;
+                
+                <span class="addon addon-left">高</span><input v-model="barnerHeight" class="form-control" type="number" style="display:inline-block;width:100px;"/><span class="addon addon-right">px</span>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-3 fs-2">
+            图片尺寸(手机端)
+        </div>
+        <div class="col-xs-9">
+            <div>
+                <span class="addon addon-left">宽</span><input v-model="MbarnerWidth" class="form-control" type="number" style="display:inline-block;width:100px;"/><span class="addon addon-right">px</span>
+                
+                &nbsp; x &nbsp;
+                
+                <span class="addon addon-left">高</span><input v-model="MbarnerHeight" class="form-control" type="number" style="display:inline-block;width:100px;"/><span class="addon addon-right">px</span>
+            </div>
+        </div>
+    </div>
+    <div class="row pt-4">
+        <div class="col-xs-3 fs-2">
+            上传图片 <input id="uploadDom" type="file" class="hidden" accept=".png,.jpg,.gif"/>
+        </div>
+        <div class="col-xs-9">
+            <table class="table table-bordered table-responsive">
+                <tr v-for="(item,index) in barners">
+                    <td>
+                        <span v-if="index!=0">
+                            <i v-if="index!=0" class="fa fa-arrow-up cursor-pointer" title="向上" @click="moveUp(index)"></i><br>
+                        </span>
+                        <span v-if="index!=barners.length-1">
+                            <i class="fa fa-arrow-down cursor-pointer" title="向下" @click="moveDown(index)"></i><br>
+                        </span>
+                        <span v-if="index>0">
+                            <i class="fa fa-trash cursor-pointer" title="删除" @click="deleteItem(index)"></i><br>
+                        </span>
+                        <i class="fa fa-eye cursor-pointer" title="查看图片" @click="window.open('{#$base_url#}'+item.path)"></i>
+                    </td>
+                    <td><img class="cursor-pointer" @click="uploadImg(index)" :src="'{#$base_url#}'+item.path" width="120px" height="50px"/></td>
+                    <td>
+                        <div>
+                            <input class="form-control" v-model="item.title" placeholder="标题" style="display:inline-block;width:auto;"/>
+                            <br>
+                            <input class="form-control" v-model="item.link" placeholder="链接" style="display:inline-block;width:auto;"/>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td colspan="2"><a class="cursor-pointer" @click="uploadImg(barners.length)">添加图片</a>，图片后缀，png,jpg,gif</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    let vm = new Vue({
+        el: '#app',
+        data: {
+            barnerHeight : {#$config.barnerHeight|default:150#},
+            MbarnerHeight : {#$config.MbarnerHeight|default:150#},
+            barnerWidth : {#$config.barnerWidth|default:1200#},
+            MbarnerWidth : {#$config.MbarnerWidth|default:1200#},
+            barners : []
+        },
+        watch: {
+            
+        },
+        methods: {
+            
+            //上传图片
+            uploadImg : function(index){
+                $("#uploadDom").trigger("click");
+                let file = document.getElementById('uploadDom');
+                file.onchange = function(){
+                    if(!file.files[0]) {
+                        return
+                    }
+                    if(file.files[0].size>20971520) {
+                        alert('文件不得超过20M')
+                        return
+                    }
+                    var formData = new FormData();
+                    formData.append('uploadFile', file.files[0]);
+                    xhr = new XMLHttpRequest();
+                    xhr.onload = function(){
+                        let responseText = JSON.parse(xhr.responseText);
+                        if(responseText.errno){
+                            error_message(responseText.errmsg);
+                        }else{
+                            success_message(responseText.info);
+                            //新增
+                            if(vm.barners.length==index){
+                                vm.barners.push(
+                                    {
+                                        "path" : responseText.path,
+                                        "title": "{#$app_name#} - {#$app_subtitle#}",
+                                        "link" : ''
+                                    }
+                                );
+                            }
+                            //覆盖
+                            else{
+                                vm.barners[index].path = responseText.path;
+                            }
+                        }
+                    };
+                    xhr.open('post', "../api/ajax.php?module=admin&method=uploadIcon", true);
+                    xhr.send(formData);
+                }
+            },
+            
+            moveDown : function(index){
+                let del = this.barners.splice(index,1);
+                this.barners.splice(index+1,0,del[0]);
+                this.$forceUpdate();
+            },
+            
+            moveUp : function(index){
+                let del = this.barners.splice(index,1);
+                this.barners.splice(index-1,0,del[0]);
+                this.$forceUpdate();
+            },
+            
+            //删除一项
+            deleteItem : function(index){
+                this.barners.splice(index,1);
+            },
+            save(){
+                $.post("../api/ajax.php?module=admin&method=saveBanner",this.$data,function(r){
+                    if(r.errno){
+                        error_message(r.errmsg);
+                    }else{
+                        success_message(r.errmsg);
+                    }
+                },"json");
+            }
+        },
+        //初始化
+        mounted() {
+            this.barners = {#$barners#};
+        }
+    });
+</script>
+</body>
+</html>

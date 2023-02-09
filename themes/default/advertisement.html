@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>{#$app_name#} | {#$app_subtitle#}</title>
+    <meta name="description"
+          content="{#$app_description#}"/>
+    <meta name="keywords"
+          content="{#$app_keywords#}"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {#$favicon#}
+
+    {#'/css/bootstrap.min.css'|addCss#}
+    {#'/css/bootstrap-dialog.min.css'|addCss#}
+    {#'/css/general.css'|addCss#}
+    {#'/fonts/font-awesome-4.7.0/css/font-awesome.min.css'|addCss#}
+
+
+    {#'/js/jquery.min.js'|addJs#}
+    {#'/js/bootstrap.min.js'|addJs#}
+    {#'/js/clipboard.min.js'|addJs#}
+    {#'/js/functions.js'|addJs#}
+    {#'/js/bootstrap-dialog.min.js'|addJs#}
+
+
+</head>
+<body style="background-color:rgb(231,231,231);">
+<div id="content">
+<header>
+    <nav class="navbar navbar-default mb-0">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="./">{#$app_name#}</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="./">首页<i class="fa fa-home"></i></a></li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+</header>
+<main>
+    <div class="container px-0 pt-3">
+        {#$adv#}
+    </div>
+</main>
+</div>
+
+<footer id="footer" class="copyright">
+    <div class="navbar navbar-default navbar-inverse">
+        <p class="text-center" style="color:#9d9d9d;margin-top:15px;">Copyright © {#$app_name#} {#$year#}</p>
+    </div>
+</footer>
+<a onclick="toUp()" title="返回顶部" id="back-to-top"
+   style="display:none;position:fixed;{#if $isMobile#}left:30px;bottom:30px;{#else#}right:60px;bottom:60px;{#/if#}background-color:rgb(255,255,255);border-radius: 50%;box-sizing: border-box;cursor:pointer;text-align:center;"><i
+        class="fa fa-search"
+        style="height:50px;width:50px;display:inline-block;line-height:50px;color:rgb(1,128,157);font-size: 1.2em;"></i></a>
+<style>
+    td {
+        word-break: break-all;
+    }
+    .jumbotron {
+        margin-bottom: 0px;
+    }
+
+    main {
+        margin-bottom: 20px;
+    }
+
+    .copyright, .navbar-inverse {
+        margin-bottom: 0px;
+        border: 0px;
+    }
+
+    .tip {
+        cursor: pointer;
+    }
+</style>
+<script>
+    $(function () {
+        const height = $("#footer").height();
+        $("#content").css("min-height",(document.documentElement.clientHeight-height)+'px');
+    })
+</script>
+</body>
+</html>

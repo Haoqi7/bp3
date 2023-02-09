@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>免app授权系统 | {#$app_name#}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {#$favicon#}
+
+    {#'/css/bootstrap.min.css'|addCss#}
+    {#'/fonts/font-awesome-4.7.0/css/font-awesome.min.css'|addCss#}
+
+
+    {#'/js/jquery.min.js'|addJs#}
+    {#'/js/bootstrap.min.js'|addJs#}
+
+</head>
+<body>
+<div id="content">
+    <h2 class="text-center" style="margin-top: 0px;padding-top: 20px">这是<a href="..">bp3</a>的免app授权系统</h2>
+    <div class="container">
+        <h2>授权方式一：网页登录</h2>
+        <p>通过在网页中快速检测已登录账户，或者使用短信登录、或者账户密码登录</p>
+        <p>点击右边的链接，然后获取授权
+            ==><a id="link" href="{#$conn#}">授权链接</a></p>
+        <p><b>提示：</b>默认自动检测当前登录的百度账号，
+            如果不希望检测，请勾选<input id="force" type="checkbox"/><label for="force">强制登录</label></p>
+        <br>
+        <h2>授权方式二：扫码登录</h2>
+        <p>通过百度网盘app或者百度app扫描网页中的二维码，然后快速登录</p>
+        <p>点击右边的链接，然后生成二维码
+            ==><a href="{#$pr_conn#}">授权链接</a>
+        </p>
+        <p><b>提示：</b>手机打开时，请缩放网页以获取大小合适的二维码</p>
+        {#if $display#}
+        <p><b>授权提示：</b>授权成功后，将自动重定向至：{#$display|urldecode#}</p>
+        {#else#}
+        {#if $grant_result#}
+        <p><b>授权提示：您已获取过授权，可点击查看上一次<a href='./display.php'>授权结果</a></b></p>
+        {#/if#}
+        {#/if#}
+    </div>
+</div>
+<footer id="footer" class="copyright">
+    <div class="navbar navbar-default navbar-inverse">
+        <p class="text-center" style="color:#9d9d9d;margin-top:15px;">Copyright © {#$app_name#} {#$year#}</p>
+    </div>
+</footer>
+<style>
+    .container {
+        font-size: 1.2em;
+    }
+
+    .copyright, .navbar-inverse {
+        margin-bottom: 0px;
+    }
+</style>
+<script>
+    let auto_login = `{#$conn#}`
+    let force_ligin = `{#$force_conn#}`
+    let force = document.getElementById("force")
+    let link = document.getElementById("link")
+    let changeNum = 1;
+    force.onchange = function () {
+        changeNum++;
+        if (changeNum % 2 == 0) {
+            link.href = force_ligin
+        } else {
+            link.href = auto_login
+        }
+    }
+    $(function () {
+        const height = $("#footer").height();
+        $("#content").css("min-height", (document.documentElement.clientHeight - height) + 'px');
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>文件管理 | bp3免部署版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {#$favicon#}
+
+    {#'/css/bootstrap.min.css'|addCss#}
+    {#'/css/bootstrap-dialog.min.css'|addCss#}
+    {#'/fonts/font-awesome-4.7.0/css/font-awesome.min.css'|addCss#}
+
+
+    {#'/js/jquery.min.js'|addJs#}
+    {#'/js/bootstrap.min.js'|addJs#}
+    {#'/js/functions.js'|addJs#}
+    {#'/js/bootstrap-dialog.min.js'|addJs#}
+
+</head>
+<body style="background-color:rgb(231,231,231);">
+<div id="content">
+    <header >
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="./">首页</a>
+                </div>
+
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav">
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="./index.php?logout=1">注销<i class="fa fa-sign-out" aria-hidden="true"></i></a></li>
+                    </ul>
+                </div><!-- /.navbar-collapse -->
+            </div><!-- /.container-fluid -->
+        </nav>
+        <div id="myheader" class="container-fluid">
+            <div class="container jumbotron" style="margin-bottom: 0px;">
+                <div class="row">
+                    <div class="col-xs-12" style="margin-bottom: 10px;">
+                        <div class="btn-group">
+                            {#if $dir#}
+                            <a target="_blank" href="{#$config.baidu.listPre#}{#$dir|urlencode#}" class="btn btn-default btn-sm">网盘目录</a>
+                            {#elseif $key#}
+                            <a target="_blank" href="{#$config.baidu.searchPre#}{#$key|urlencode#}" class="btn btn-default btn-sm">网盘搜索</a>
+                            {#/if#}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <ol class="breadcrumb">
+                            <li><a href='./file.php'>Home</a></li>
+                            {#foreach from=$nav key=k item=v#}
+                            <li><a href='?dir={#$v["enc"]#}'>{#$v["name"]#}</a></li>
+                            {#/foreach#}
+                        </ol>
+                    </div>
+                </div>
+                <form>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="search-wraper" role="search">
+                                <div class="input-group">
+                                    <input type="text" name="s" class="form-control"
+                                           placeholder="{#if $key#}正在搜索：{#$key#}{#else#}搜索文件{#/if#}"
+                                           required="required" onkeyup="this.value=this.value.replace(/[ ]/g,'')">
+                                    <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit">Go!</button>
+                          </span>
+                                </div><!-- /input-group -->
+                            </div>
+                        </div><!--col-xs-12-->
+                    </div><!--row-->
+                </form>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <table class="table table-bordered table-responsive">
+                {#if $data['list']==null #}
+                这儿似乎什么也没有...
+                {#else#}
+                <thead class='active'>
+                <tr class="active">
+                    <th></th>
+                    <th>文件<i class='glyphicon glyphicon-chevron-down'></i></th>
+                    <th>大小<i class='glyphicon glyphicon-chevron-down'></i></th>
+                    <th>操作<i class='glyphicon glyphicon-chevron-down'></i></th>
+                </tr>
+                </thead>
+                <tbody>
+                {#foreach from=$data['list'] key=k item=v#}
+                <tr>
+                    {#if $v['isdir']==1 #}
+                    <th><i class="glyphicon glyphicon-folder-open"></i></th>
+                    <td class="info br" colspan="3">
+                        <a href="?dir={#$v['encode_path']#}" title="{#$v['path']#}" style="display: block">&nbsp;{#if $key#}{#$v['path']#}{#else#}{#$v['server_filename']#}{#/if#}</a>
+                    </td>
+                    {#else#}
+                    <th><i class="glyphicon glyphicon-file"></i></th>
+                    <td class="br"> {#$v['server_filename']#}{#if $key#} <span tip="{#$v['title']#}" class="tip fa fa-question-circle-o"></span>{#/if#}</td>
+                    <td>{#$v['show_size']#}</td>
+                    <td>
+                        <div class="btn {#if $isMobile#}btn-group-vertical{#else#}btn-group{#/if#}">
+                            <a class="btn btn-default" onclick="setPage()" href="{#$base_url#}/admin/dlink.php?fsid={#$v['fs_id']#}&access_token={#$access_token#}">直链</a>
+                        </div>
+                    </td>
+                    {#/if#}
+                </tr>
+                {#/foreach#}
+                {#/if#}
+            </table>
+        </div>
+    </main>
+</div>
+<footer id="footer">
+    <div class="copyright navbar navbar-default navbar-inverse">
+        <p class="text-center" style="color:#9d9d9d;margin-top:15px;">Copyright © {#$app_name#} {#$year#}</p>
+    </div>
+</footer>
+<a href="javascript:$('html,body').animate({scrollTop:0}, 1000);" title="返回顶部" id="back-to-top"
+   style="display:none;position:fixed;{#if $isMobile#}left:20px;{#else#}right:20px;{#/if#}bottom:10px;background-color:rgb(95,99,104);box-sizing: border-box;cursor:pointer;text-align:center;"><i
+        class="fa fa-angle-up"
+        style="height:40px;width:40px;display:inline-block;line-height:40px;color:#fff;"></i></a>
+<style>
+    .copyright{
+        margin-bottom: 0px;
+    }
+    .br{
+        word-break: break-all !important;
+    }
+    .tip{
+        cursor: pointer;
+    }
+</style>
+<script src="../js/clipboard.min.js"></script>
+<script>
+    $(function () {
+        const height = $("#footer").height();
+        $("#content").css("min-height",(document.documentElement.clientHeight-height)+'px');
+    })
+    $(window).scroll(function(){
+        let scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        if(scrollTop>50){
+            $("#back-to-top").css("display","block");
+        }else{
+            $("#back-to-top").css("display","none");
+        }
+    });
+    // 提示完整目录
+    $(".tip").click(function () {
+
+        BootstrapDialog.show({
+            title: '文件位置',
+            message: $(this).attr("tip"),
+            closable: true,
+            closeByBackdrop: false,
+            closeByKeyboard: false,
+            buttons: [{
+                label: '关闭消息',
+                action: function(dialogRef){
+                    dialogRef.close();
+                }
+            }]
+        });
+    });
+</script>
+</body>
+</html>

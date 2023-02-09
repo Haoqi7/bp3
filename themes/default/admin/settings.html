@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>修改设置 | bp3</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {#$favicon#}
+
+    {#'/css/bootstrap.min.css'|addCss#}
+    {#'/css/bootstrap-dialog.min.css'|addCss#}
+    {#'/css/general.css'|addCss#}
+    {#'/fonts/font-awesome-4.7.0/css/font-awesome.min.css'|addCss#}
+
+
+    {#'/js/jquery.min.js'|addJs#}
+    {#'/js/bootstrap.min.js'|addJs#}
+    {#'/js/vue.min.js'|addJs#}
+    {#'/js/functions.js'|addJs#}
+    {#'/js/bootstrap-dialog.min.js'|addJs#}
+
+</head>
+<body style="background-color:rgb(231,231,231);">
+<div id="content">
+<header>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="./">管理系统</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                </ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="./file.php">文件管理<i class="fa fa-th-large" aria-hidden="true"></i><span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="active"><a href="./settings.php">修改设置<i class="fa fa-cog"></i></a></li>
+                    <li><a href="./help.php">帮助与支持<i class="fa fa-question-circle" aria-hidden="true"></i></a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../">前台<i class="fa fa-home"></i></a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{#$user#}<span class="fa fa-user-circle"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="./logout.php"><i class="fa fa-sign-out" aria-hidden="true"></i> 注销</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+<main>
+    <div id="app" class="container">
+        <form id="main_form" method="post">
+            <div class="row">
+                <div class="col-xs-6">
+                    <h4 class="text-danger">请谨慎修改设置</h4>
+                </div>
+                <div class="col-xs-6 text-right">
+                    <button class="btn btn-primary" type="submit">保存设置</button>
+                </div>
+            </div>
+            <ul id="myTab" class="nav nav-tabs">
+                <li class="active"><a href="#base" data-toggle="tab">基础设置</a></li>
+                <li><a href="#grant" data-toggle="tab">授权系统</a></li>
+                <li><a href="#mail" data-toggle="tab">邮件通知</a></li>
+                <li><a href="#right" data-toggle="tab">权限控制</a></li>
+                <li><a href="#custom" data-toggle="tab">自定义设置</a></li>
+                <li><a href="#account" data-toggle="tab">账户绑定</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade in active" id="base">
+                    <table class="table table-responsive">
+                        <tr>
+                            <td>
+                                （-）站点logo <span class="tip fa fa-question-circle-o" tip="点击上传，即可覆盖图标，自动保存"></span>
+                            </td>
+                            <td>
+                                <input type="file" class="hidden" id="faviconDom" accept=".ico"/>
+                                <img width="32px" src="{#$base_url#}/favicon.ico?v={#$smarty.now#}" class="cursor-pointer" onclick="uploadFavicon()"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                （1）网站名称 <span class="tip fa fa-question-circle-o" tip="用于网站主标题"></span>
+                            </td>
+                            <td>
+                                <input name="s1" value="{#$app_name#}" class="form-control"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（2）网站副标题 <span class="tip fa fa-question-circle-o" tip="用于网站副标题"></span></td>
+                            <td><input name="s2" value="{#$app_subtitle#}" class="form-control"/></td>
+                        </tr>
+                        <tr>
+                            <td>（3）用户名 <span class="tip fa fa-question-circle-o" tip="用于登录bp3的用户名"></span></td>
+                            <td><input name="s3" value="{#$name#}" class="form-control"/></td>
+                        </tr>
+                        <tr>
+                            <td>（4）用户密码 <span class="tip fa fa-question-circle-o" tip="用于登录bp3的密码"></span></td>
+                            <td>
+                                <div class="input-group">
+                                    <input name="s4" type="password" value="{#$pwd#}" class="form-control"/>
+                                    <div class="input-group-btn">
+                                        <button type="button" class="btn btn-default" title="显示密码" onclick="seePwd(this)"
+                                                aria-label="Help"><span class="fa fa-eye"></span></button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（5）账户锁定 <span class="tip fa fa-question-circle-o" tip="登录连续错误n次，则账户锁定"></span></td>
+                            <td><input name="s5" value="{#$lock#}" class="form-control"/></td>
+                        </tr>
+                        <tr>
+                            <td>（10）官博地址 <span class="tip fa fa-question-circle-o" tip="链接到你的博客网站，如不需要可留空（前台自动隐藏）"></span></td>
+                            <td><input name="s10" value="{#$app_blog#}" class="form-control"/></td>
+                        </tr>
+                        <tr>
+                            <td>（11）github地址 <span class="tip fa fa-question-circle-o" tip="链接到你的github（或gitee），如不需要可留空（前台自动隐藏）"></span></td>
+                            <td><input name="s11" value="{#$app_github#}" class="form-control"/></td>
+                        </tr>
+                        <tr>
+                            <td>（20）seo描述 <span class="tip fa fa-question-circle-o" tip="对应于seo优化的description"></span></td>
+                            <td>
+                                <input name="s20" class="form-control" value="{#$app_description#}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（21）seo关键字 <span class="tip fa fa-question-circle-o" tip="对应于seo优化的keywords"></span></td>
+                            <td>
+                                <input name="s21" class="form-control" value="{#$app_keywords#}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（24）更新地址 <span class="tip fa fa-question-circle-o"
+                                           tip="更新地址，可选更新源，该地址提供下载bp3最新版压缩包"></span></td>
+                            <td>
+                                <table class="table table-responsive">
+                                    <tr>
+                                        <td><input id="show_update_url" name="s24u" class="form-control"/></td>
+                                        <td>
+                                            <label class="radio-inline">
+                                                <input id="s24_cn" class="mgc mgc-circle" type="radio" name="s24" value="cn"> 国内
+                                            </label>
+                                            <label class="radio-inline">
+                                                <input id="s24_en" class="mgc mgc-circle" type="radio" name="s24" value="en"> 国外
+                                            </label>
+                                            <label class="radio-inline">
+                                                <input id="s24_cus" class="mgc mgc-circle" type="radio" name="s24" value="cus"> 自定义
+                                            </label>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（27）站点主题 <span class="tip fa fa-question-circle-o" tip="站点主题设置，可以手动制作或导入主题"></span></td>
+                            <td>
+                                <select name="s27" class="form-control" style="width: auto">
+                                    {#foreach from=$themes key=k item=v#}
+                                    <option value="{#$v#}" {#if $v==$theme#}selected{#/if#}>{#$v#}</option>
+                                    {#/foreach#}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（38）debug模式 <span class="tip fa fa-question-circle-o" tip="开发者状态下调试模式，正常情况下不需要开启"></span></td>
+                            <td>
+                                <input name="s38" type="checkbox" class="mgc-sm mgc-switch" {#if $debug#}checked{#/if#}>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（39）静态文件URL <span class="tip fa fa-question-circle-o" tip="用于分离静态文件<br>如有需要，把static目录整个上传到远程，然后取得远程static的URL，结尾不要带/<br>警告，不要设置错误，否则此页面也将无法打开，需要手动修改config.php"></span></td>
+                            <td><input name="s39" value="{#$cfg_static_url#}" class="form-control"/></td>
+                        </tr>
+                        <tr>
+                            <td>（40）使用数据库 <span class="tip fa fa-question-circle-o" tip="是否使用数据库，而不是从api获取数据"></span></td>
+                            <td>
+                                <input name="s40" type="checkbox" class="mgc-sm mgc-switch" {#if $config.useDb#}checked{#/if#}>
+                                <br><br>点击<a href="./dbsettings.php">配置管理数据库</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（41）前台数据库 <span class="tip fa fa-question-circle-o" tip="前台使用数据库"></span></td>
+                            <td>
+                                <input name="s41" type="checkbox" class="mgc-sm mgc-switch" {#if $config.useDbPre#}checked{#/if#}>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（42）不自动更新token <span class="tip fa fa-question-circle-o" tip="使用db时，如网络卡顿，则在前台首页不会自动尝试刷新token【不连接到百度网盘，从而减少卡顿】"></span></td>
+                            <td>
+                                <input name="s42" type="checkbox" class="mgc-sm mgc-switch" {#if $noRefresh#}checked{#/if#}>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（45）数据库match模式 <span class="tip fa fa-question-circle-o" tip="数据库全文检索模式，需创建索引，创建后导入速度变慢，数据无分页，全盘搜索极快，子目录查询首次慢，后续搜索极快。首次开启请点击<button class='btn btn-primary' onclick='createMatch()'>创建索引</button>，创建过程或许非常久无需等待，可稍后点击<button class='btn btn-primary' onclick='checkMatch()'>检测索引状态</button>，如不需要，可选择<button class='btn btn-primary' onclick='delMatch()'>删除索引</button>，删除后导入速度恢复快速。"></span></td>
+                            <td>
+                                <input name="s45" type="checkbox" class="mgc-sm mgc-switch" {#if $config.dbMatch|default:0#}checked{#/if#}>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（46）多网盘混合搜索 <span class="tip fa fa-question-circle-o" tip="多网盘混合搜索"></span></td>
+                            <td>
+                                <input name="s46" type="checkbox" class="mgc-sm mgc-switch" {#if $config.allSearch|default:0#}checked{#/if#}>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（47）轮播图设置 <span class="tip fa fa-question-circle-o" tip="首页的轮播广告设置"></span></td>
+                            <td>
+                                <a href="banner.php">首页轮播广告设置</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（48）缩略图显示开关 <span class="tip fa fa-question-circle-o" tip="api加载时，是否尝试加载缩略图，默认加载，可关闭以提高页面加载速度"></span></td>
+                            <td>
+                                <input name="s48" type="checkbox" class="mgc-sm mgc-switch" {#if $config.loadThumb|default:1#}checked{#/if#}>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（49）站点公告 <span class="tip fa fa-question-circle-o" tip="设置站点首页公告，如不需要，不需要时留空。"></span></td>
+                            <td>
+                                <div class="col-xs-6 px-0">
+                                    <input name="s49" type="text" class="form-control" value="{#$config.siteNotice|default:''#}" placeholder="设置站点首页公告，如不需要，不需要时留空。">
+                                </div>
+                                <div class="col-xs-6 px-0">
+                                    <input name="s50" type="text" class="form-control" value="{#$config.siteNoticeLink|default:''#}" placeholder="公共跳转链接，可不填">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（51）隐藏首页导航条 <span class="tip fa fa-question-circle-o" tip="显示或隐藏站点首页导航条"></span></td>
+                            <td>
+                                <input name="s51" type="checkbox" value="1" class="mgc-sm mgc-switch" {#if $config.hideIndexNavbar|default:0#}checked{#/if#}>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="grant">
+                    <table class="table table-responsive">
+                        <tr>
+                            <td colspan="2">
+                                <div class="m-3 text-success">
+                                    免app系统简介：是默认的授权系统，也就是初始化时填写自己申请的信息（需要回调地址）
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（6）app_key <span class="tip fa fa-question-circle-o" tip="（免app授权系统）配置百度app的appKey"></span></td>
+                            <td><input name="s6" value="{#$app_key#}" class="form-control"/></td>
+                        </tr>
+                        <tr>
+                            <td>（7）secret_key <span class="tip fa fa-question-circle-o"
+                                                 tip="（免app授权系统）用于配置百度app的secretKey"></span></td>
+                            <td>
+                                <div class="input-group">
+                                    <input name="s7" type="password" value="{#$secret_key#}" class="form-control"/>
+                                    <div class="input-group-btn">
+                                        <button type="button" class="btn btn-default" title="显示密码" onclick="seePwd(this)"
+                                                aria-label="Help"><span class="fa fa-eye"></span></button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（9）redirect_uri <span class="tip fa fa-question-circle-o"
+                                                   tip="（免app授权系统）用于配置百度app的回调地址，点击 <button class='btn btn-primary' onclick='fillRedirect()'>自动修正</button>"></span></td>
+                            <td><input id="redirect" name="s8" value="{#$redirect_uri#}" class="form-control"
+                                       placeholder="grant/callback.php"/></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div class="m-3 text-success">
+                                    内置app系统简介：不需要回调的授权系统，并且内置了开发者赠送的app信息（该信息可修改）
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（22）内置appKey <span class="tip fa fa-question-circle-o" tip="如果需要，可更换内置授权系统appKey"></span></td>
+                            <td><input name="s22" value="{#$inner_app_key#}" class="form-control"/></td>
+                        </tr>
+                        <tr>
+                            <td>（23）内置appSecret <span class="tip fa fa-question-circle-o" tip="内置授权系统的secretKey"></span></td>
+                            <td>
+                                <div class="input-group">
+                                    <input type="password" name="s23" value="{#$inner_secret_key#}" class="form-control"/>
+                                    <div class="input-group-btn">
+                                        <button type="button" class="btn btn-default" title="显示密码" onclick="seePwd(this)"
+                                                aria-label="Help"><span class="fa fa-eye"></span></button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div class="text-success m-3">
+                                    bp3可以兼容多个授权系统，实际使用哪个系统，取决于授权地址（可以使用远程授权）（点击自定义可手动编辑）
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div>（17）授权地址 <span class="tip fa fa-question-circle-o" tip="本站使用的授权地址，自定义时可编辑，修改后请重新授权"></span></div>
+                                <div>
+                                    <table class="table table-responsive">
+                                        <tr>
+                                            <td>
+                                                <input id="show_grant_url" name="s17" class="form-control"/>
+                                            </td>
+                                            <td>
+                                                <label class="radio-inline">
+                                                    <input id="s17s_fast" class="mgc mgc-circle" type="radio" name="s17s" value="fast"> 免app
+                                                </label>
+                                                <label class="radio-inline">
+                                                    <input id="s17s_inner" class="mgc mgc-circle" type="radio" name="s17s" value="inner"> 内置app
+                                                </label>
+                                                <label class="radio-inline">
+                                                    <input id="s17s_url" type="radio" class="mgc mgc-circle" name="s17s" value="url"> 自定义
+                                                </label>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div class="text-success m-3">
+                                    bp3授权系统，可以使用远程地址，意味着该功能可以开放在互联网上（开放此系统不会带来什么损失，当然你也可以关闭）
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（16）免app授权系统 <span class="tip fa fa-question-circle-o" tip="打开后，本系统的免app授权地址可被访客使用"></span></td>
+                            <td>
+                                <input name="s16" type="checkbox" class="mgc-sm mgc-switch" {#if $open_grant#}checked{#/if#}>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（18）内置app授权系统 <span class="tip fa fa-question-circle-o" tip="打开后，访客可使用本系统的内置app授权系统"></span>
+                            </td>
+                            <td>
+                                <input name="s18" type="checkbox" class="mgc-sm mgc-switch" {#if $open_grant2#}checked{#/if#}>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="mail">
+                    <table class="table table-responsive">
+                        <tr>
+                            <td colspan="2">
+                                <div class="text-success m-3">
+                                    请配置发件人的 smtp 信息，如不懂请百度或加群咨询
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（28）smtp邮箱 <span class="tip fa fa-question-circle-o" tip="用户发送邮件的邮箱"></span></td>
+                            <td>
+                                <input type="email" name="s28" class="form-control" placeholder="发送人邮箱" value="{#$config.mail.user#}">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（29）smtp密钥 <span class="tip fa fa-question-circle-o" tip="用户发送邮件的密钥"></span></td>
+                            <td>
+                                <div class="input-group">
+                                    <input type="password" name="s29" value="{#$config.mail.pass#}" class="form-control" placeholder="发送人密钥"/>
+                                    <div class="input-group-btn">
+                                        <button type="button" class="btn btn-default" title="显示密码" onclick="seePwd(this)"
+                                                aria-label="Help"><span class="fa fa-eye"></span></button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（30）smtp服务器 <span class="tip fa fa-question-circle-o" tip="smtp服务器"></span></td>
+                            <td>
+                                <input type="text" name="s30" class="form-control" placeholder="smtp服务器域名" value="{#$config.mail.server#}">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（31）smtp端口 <span class="tip fa fa-question-circle-o" tip="用于发送邮件的端口，请使用加密端口"></span></td>
+                            <td>
+                                <input type="number" min="0" name="s31" class="form-control" placeholder="邮箱发送端口" value="{#$config.mail.port#}">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div class="text-success m-3">
+                                    收件人配置，也就是用于接收邮件（注意不可与发件人重复！两者不相同）
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（32）收件人邮箱 <span class="tip fa fa-question-circle-o" tip="通知接收邮箱"></span></td>
+                            <td>
+                                <input type="email" name="s32" class="form-control" placeholder="系统管理员邮箱" value="{#$config.mail.receiver#}">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div class="text-success m-3">
+                                    邮件通知的相关设置（<span class="text-primary cursor-pointer" onclick='testMail()'>点击这里</span>测试配置是否正确，若正常，则收件人账户将收到发件人发送的测试邮件）
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（33）token刷新失效邮件 <span class="tip fa fa-question-circle-o" tip="每次token刷新失败时，发送一封监控示警邮件，每天最多发送一封"></span></td>
+                            <td>
+                                <input name="s33" type="checkbox" class="mgc-sm mgc-switch" {#if $config.mail.refresh#}checked{#/if#}>                                
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="right">
+                    <table class="table table-responsive">
+                        <tr>
+                            <td colspan="2">
+                                <div class="text-success m-3">
+                                    针对访客的一些控制，访客是指未登录，若已处于登录状态则不受到影响
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（14）访客直链 <span class="tip fa fa-question-circle-o" tip="关闭后，访客不可使用直链功能"></span>
+                            <td>
+                                <input name="s14" type="checkbox" class="mgc-sm mgc-switch" {#if !$close_dlink#}checked{#/if#}>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（15）访客下载 <span class="tip fa fa-question-circle-o" tip="关闭后，访客不可直接下载"></span></td>
+                            <td>
+                                <input name="s15" type="checkbox" class="mgc-sm mgc-switch" {#if !$close_dload#}checked{#/if#}>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（19）免部署功能 <span class="tip fa fa-question-circle-o" tip="打开后，访客可使用bp3免部署版"></span></td>
+                            <td>
+                                <input name="s19" type="checkbox" class="mgc-sm mgc-switch" {#if $open_session#}checked{#/if#}>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div class="text-success m-3">
+                                    如有需要，设置一些隐藏的文件、文件夹（仅主账户）
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（34）前台隐藏文件列表 <span class="tip fa fa-question-circle-o" tip="前台要隐藏的文件列表，填写fsid，并使用 , 分割"></span></td>
+                            <td colspan="2">
+                                <input name="s34" class="form-control" value="{#$config.control.hideFile#}" placeholder="每个文件都存在一个fsid，多个之间用 , 分割"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（35）前台隐藏文件夹列表 <span class="tip fa fa-question-circle-o" tip="前台要隐藏的文件夹列表，填写绝对路径，并使用 || 分割"></span></td>
+                            <td colspan="2">
+                                <input name="s35" class="form-control" value="{#$config.control.hideDir#}" placeholder="填写文件夹绝对路径，多个之间用 || 分割"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="custom">
+                    <table class="table table-responsive">
+                        <tr>
+                            <td colspan="2">
+                                <div class="text-success m-3">
+                                    有些功能bp3不存在，方便快速跳转到百度网盘网页版进行操作
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（36）网盘列表前缀 <span class="tip fa fa-question-circle-o" tip="百度网盘网页版文件列表前缀"></span></td>
+                            <td><input name="s36" value="{#$config.baidu.listPre#}" class="form-control"/></td>
+                        </tr>
+                        <tr>
+                            <td>（37）网盘搜索前缀 <span class="tip fa fa-question-circle-o" tip="百度网盘网页版文件搜索前缀"></span></td>
+                            <td><input name="s37" value="{#$config.baidu.searchPre#}" class="form-control"/></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div class="text-success m-3">
+                                    由于账户容易忘记，这里允许你记录一些账户密码
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（12）baidu账号 <span class="tip fa fa-question-circle-o" tip="可忽略，用于记录你的百度账号"></span></td>
+                            <td><input name="s12" value="{#$baidu_account#}" class="form-control"/></td>
+                        </tr>
+                        <tr>
+                            <td>（13）baidu密码 <span class="tip fa fa-question-circle-o" tip="可忽略，用于记录你的百度密码"></span></td>
+                            <td>
+                                <div class="input-group">
+                                    <input name="s13" type="password" value="{#$baidu_pwd#}" class="form-control"/>
+                                    <div class="input-group-btn">
+                                        <button type="button" class="btn btn-default" title="显示密码" onclick="seePwd(this)"
+                                                aria-label="Help"><span class="fa fa-eye"></span></button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>（44）无权限adv <span class="tip fa fa-question-circle-o" tip="无权限adv"></span></td>
+                            <td>
+                                <input name="s44" type="text" value="{#$dn_adv#}" class="form-control"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="account">
+                    <table class="table table-responsive">
+                        <tr>
+                            <td colspan="2">
+                                <div class="text-success m-3">
+                                    多账户的管理，暂时在后台首页入口，这里只有主账户
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <input type="file" class="hidden" id="uploadDom" accept=".png,.jpg,.gif"/>
+                                <div class="row">
+                                    <div class="col-xs-6">（9）前台路径 <span class="tip fa fa-question-circle-o" tip="开放给访客的目录，可以设置多个目录"></span></div>
+                                    <div class="col-xs-6 text-right"><button type="button" @click="add()" class="btn btn-default">增加一项</button></div>
+                                </div>
+                                <div class="row" v-for="(item,index) in pre_dirs">
+                                    <div class="col-xs-5 px-0"><input class="form-control" v-model="item.dir" placeholder="根目录留空即可"/></div>
+                                    <div class="col-xs-3 px-0"><input class="form-control" v-model="item.show" placeholder="显示名称"/></div>
+                                    <div class="col-xs-2 px-0"><img :src="'{#$base_url#}'+item.icon" height="30px" :path="item.icon" class="cursor-pointer" title="点击上传" @click="uploadIcon(index)"/></div>
+                                    <div class="col-xs-2 px-1">
+                                        <span v-if="index!=0" class="cursor-pointer fa fa-arrow-up" @click="moveUp(index)" title="向上">&nbsp;</span>
+                                        <span v-if="index!=pre_dirs.length-1" @click="moveDown(index)" class="cursor-pointer fa fa-arrow-down" title="向下">&nbsp;</span>
+                                        <span class="cursor-pointer text-danger fa fa-trash" title="删除" @click="del(index)"></span>
+                                    </div>
+                                </div>
+                                <p></p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="text-success my-5">
+                设置问题，可添加bp3官方QQ交流群：1150064636。
+            </div>
+        </form>
+    </div>
+</main>
+</div>
+<footer id="footer" class="navbar navbar-default navbar-inverse copyright">
+    <p class="text-center" style="color:#9d9d9d;margin-top:15px;">Copyright © bp3 {#$year#}</p>
+</footer>
+<style>
+    .dropdown:hover .dropdown-menu {
+		display: block;
+	}
+    .copyright {
+        margin-bottom: 0px;
+    }
+
+    td {
+        word-break: break-all !important;
+    }
+
+    .radio-inline + .radio-inline {
+        margin: 0px;
+        padding-right: 10px;
+    }
+
+    .tip {
+        cursor: pointer;
+        color: #0d6efd;
+    }
+    thead>tr{
+        background-color: #c0c0c0;
+    }
+    tbody>tr:nth-child(odd){
+        background-color: #f5f5f5;
+    }
+</style>
+<script>
+ 
+    $(function () {
+        const height = $("#footer").height();
+        $("#content").css("min-height",(document.documentElement.clientHeight-height)+'px');
+        show_grant_url();
+        show_update_url();
+    });
+    $(function(){
+      $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+      // 获取已激活的标签页的名称
+      var activeTab = $(e.target).text(); 
+      // 获取前一个激活的标签页的名称
+      var previousTab = $(e.relatedTarget).text(); 
+      $(".active-tab span").html(activeTab);
+      $(".previous-tab span").html(previousTab);
+	  });
+	});
+	 /*Bootstrap 3：在页面刷新时保持选中的选项卡*/
+	 $(document).ready(function () {
+		 if (location.hash) {
+			 $("a[href='" + location.hash + "']").tab("show");
+		 }
+		 $(document.body).on("click", "a[data-toggle='tab']", function (event) {
+			 location.hash = this.getAttribute("href");
+		 });
+	 });
+	 $(window).on("popstate", function () {
+		 var anchor = location.hash || $("a[data-toggle='tab']").first().attr("href");
+		 $("a[href='" + anchor + "']").tab("show");
+	 });
+    
+    //上传图标
+    function uploadIcon(index){
+        $("#uploadDom").trigger("click");
+        let file = document.getElementById('uploadDom');
+        file.onchange = function(){
+            if(!file.files[0]) {
+                return
+            }
+            if(file.files[0].size>20971520) {
+                alert('文件不得超过20M')
+                return
+            }
+            var formData = new FormData();
+            formData.append('uploadFile', file.files[0]);
+            xhr = new XMLHttpRequest();
+            xhr.onload = function(){
+                let responseText = JSON.parse(xhr.responseText);
+                if(responseText.errno){
+                    error_message(responseText.errmsg);
+                }else{
+                    success_message(responseText.info);
+                    vm.pre_dirs[index].icon = responseText.path;
+                }
+            };
+            xhr.open('post', "../api/ajax.php?module=admin&method=uploadIcon", true);
+            xhr.send(formData);
+        }
+    }
+    
+    //上传根目录图标
+    function uploadFavicon(){
+        $("#faviconDom").trigger("click");
+        let file = document.getElementById('faviconDom');
+        file.onchange = function(){
+            if(!file.files[0]) {
+                return
+            }
+            if(file.files[0].size>20971520) {
+                alert('文件不得超过20M')
+                return
+            }
+            var formData = new FormData();
+            formData.append('uploadFile', file.files[0]);
+            formData.append('fileRealPath', '/favicon.ico');
+            xhr = new XMLHttpRequest();
+            xhr.onload = function(){
+                let responseText = JSON.parse(xhr.responseText);
+                if(responseText.errno){
+                    error_message(responseText.errmsg);
+                }else{
+                    success_message(responseText.info);
+                    lazy_reload();
+                }
+            };
+            xhr.open('post', "../api/ajax.php?module=admin&method=uploadIcon", true);
+            xhr.send(formData);
+        }
+    }
+
+    let vm = new Vue({
+        el: '#app',
+        data:{
+            pre_dir:{"dir":"","show":"","icon":"/static/img/icon/folder.png"},
+            pre_dirs:[
+            ]
+        },
+        methods:{
+            del : function (index) {
+                if(this.pre_dirs.length>1){
+                    this.pre_dirs.splice(index,1);
+                }
+                else{
+                    message("已经是最后一项啦","error");
+                }
+            },
+            add : function () {
+                this.pre_dirs.push(clone(this.pre_dir));
+            },
+            moveUp : function(index){
+                let del = this.pre_dirs.splice(index,1);
+                this.pre_dirs.splice(index-1,0,del[0]);
+                this.$forceUpdate();
+            },
+            moveDown : function(index){
+                let del = this.pre_dirs.splice(index,1);
+                this.pre_dirs.splice(index+1,0,del[0]);
+                this.$forceUpdate();
+            }
+        },
+        mounted(){
+            let pre_dir = '{#$pre_dir#}';
+            pre_dir = pre_dir.split("||");
+            let pre_dir_show = '{#$config.control.pre_dir_show#}';
+            pre_dir_show = pre_dir_show.split("||");
+            let pre_dir_icon = '{#$config.control.pre_dir_icon#}';
+            pre_dir_icon = pre_dir_icon.split("||");
+            for (let i = 0; i < pre_dir.length; i++) {
+                let item = clone(this.pre_dir)
+                item.dir = pre_dir[i];
+                item.show = pre_dir_show[i];
+                item.icon = pre_dir_icon[i] ? pre_dir_icon[i] : '/static/img/icon/folder.png';
+                this.pre_dirs.push(item);
+            }
+        }
+    });
+    
+    function createMatch(){
+        $.get("../api/ajax.php?module=admin&method=createMatch",{},function(r){
+            if(r.errno==0){
+                window.alert("索引开始创建");
+            }else{
+                window.alert(r.errmsg);
+            }
+        },"json");
+    }
+    
+    function checkMatch(){
+        $.get("../api/ajax.php?module=admin&method=checkMatch",{},function(r){
+            if(r.errno==0){
+                window.alert("索引已经存在");
+            }else{
+                window.alert("索引不存在");
+            }
+        },"json");
+    }
+    
+    function delMatch(){
+        $.get("../api/ajax.php?module=admin&method=delMatch",{},function(r){
+            if(r.errno==0){
+                window.alert("索引删除成功");
+            }else{
+                window.alert(r.errmsg);
+            }
+        },"json");
+    }
+
+    /**
+     * 显示密码
+     */
+    function seePwd(obj) {
+        const pwdValue = $(obj).parent().parent().children('input:first-child').val();//获取密码值
+        const _type = $(obj).parent().parent().children('input:first-child').attr('type');//获取input的type类型
+        if (_type === 'password') {
+            $(obj).parent().parent().children('input:first-child').attr('type', 'text');
+            $(obj).children('span:first-child').attr('class', 'fa fa-eye-slash');
+            $(obj).attr('title', '隐藏密码');
+        } else if (_type === 'text') {
+            $(obj).parent().parent().children('input:first-child').attr('type', 'password');
+            $(obj).children('span:first-child').attr('class', 'fa fa-eye');
+            $(obj).attr('title', '显示密码');
+        }
+        $(obj).parent().parent().children('input:first-child').val(pwdValue);
+    }
+
+    /**
+     * 自动填充回调地址
+     */
+    function fillRedirect(){
+        let redirect = "{#$base_url#}/grant/callback.php";
+        $("#redirect").val(redirect);
+    }
+
+    /**
+     * 测试邮件
+     */
+    function testMail(){
+        $.get("../api/ajax.php?module=admin&method=testMail",function (r) {
+            if(r.errno){
+                error_message("邮件发送失败，请排查错误")
+            }else{
+                success_message("邮件已成功发送，请注意查收")
+            }
+        },"json");
+    }
+    /**
+     * 选择与展示grant_url
+     */
+    function show_grant_url() {
+        let grant_type = '{#$config.control.grant_type#}';
+        let grant_url = '{#$config.identify.grant_url#}';
+        let fast_url = '{#$grant#}';
+        let inner_url = '{#$grant2#}';
+        if (grant_type == 'url') {
+            $("#show_grant_url").val(grant_url);
+            $("#s17s_url").trigger("click");
+        } else if (grant_type == 'fast') {
+            $("#show_grant_url").val(fast_url);
+            $("#s17s_fast").trigger("click");
+        } else if (grant_type == 'inner') {
+            $("#show_grant_url").val(inner_url);
+            $("#s17s_inner").trigger("click");
+        }
+    }
+
+    // 修改授权地址
+    $("input[name=s17s]").change(function () {
+        let checked = $(event.target).val();
+        let grant_url = '{#$config.identify.grant_url#}';
+        let fast_url = '{#$grant#}';
+        let inner_url = '{#$grant2#}';
+        if (checked == 'url') {
+            $("#show_grant_url").val(grant_url);
+            $("#show_grant_url").prop("readonly", false);
+        } else if (checked == 'fast') {
+            $("#show_grant_url").val(fast_url);
+            $("#show_grant_url").prop("readonly", true);
+        } else if (checked == 'inner') {
+            $("#show_grant_url").val(inner_url);
+            $("#show_grant_url").prop("readonly", true);
+        }
+    });
+
+    // 显示更新地址
+    function show_update_url() {
+        let update_type = '{#$config.control.update_type#}';
+        let update_cn = 'https://gitee.com/zhufenghua1998/bp3/repository/archive/main.zip';
+        let update_en = 'https://github.com/zhufenghua1998/bp3/archive/refs/heads/main.zip';
+        let update_url = '{#$config.control.update_url#}';
+        if (update_type == 'cus') {
+            $("#show_update_url").val(update_url);
+            $("#s24_cus").trigger("click");
+        } else if (update_type == 'cn') {
+            $("#show_update_url").val(update_cn);
+            $("#s24_cn").trigger("click");
+        } else if (update_type == 'en') {
+            $("#show_update_url").val(update_en);
+            $("#s24_en").trigger("click");
+        }
+    }
+
+    // 修改更新地址
+    $("input[name=s24]").change(function () {
+        let checked = $(event.target).val();
+        let update_cn = 'https://gitee.com/zhufenghua1998/bp3/repository/archive/main.zip';
+        let update_en = 'https://github.com/zhufenghua1998/bp3/archive/refs/heads/main.zip';
+        let update_url = '{#$config.control.update_url#}';
+        if (checked == 'cus') {
+            $("#show_update_url").val(update_url);
+            $("#show_update_url").prop("readonly", false);
+        } else if (checked == 'cn') {
+            $("#show_update_url").val(update_cn);
+            $("#show_update_url").prop("readonly", true);
+        }  else if (checked == 'en') {
+            $("#show_update_url").val(update_en);
+            $("#show_update_url").prop("readonly", true);
+        }
+    });
+
+    $("#main_form").submit(function () {
+        event.preventDefault();
+        BootstrapDialog.show({
+            title: "消息",
+            message: '保存设置？',
+            buttons: [{
+                icon: 'glyphicon glyphicon-send',
+                label: '确认',
+                hotkey: 13, // Enter.
+                cssClass: 'btn-primary',
+                autospin: true,
+                action: function (dialogRef) {
+                    dialogRef.enableButtons(false);
+                    dialogRef.setClosable(false);
+                    dialogRef.getModalBody().html('请求中...');
+                    let query = [];
+                    //前台目录
+                    let items = [];
+                    for (let i = 0; i < vm.pre_dirs.length; i++) {
+                        items.push(vm.pre_dirs[i].dir);
+                    }
+                    query['s9'] = items.join("||");
+                    //前台目录显示名称
+                    items = [];
+                    for (let i = 0; i < vm.pre_dirs.length; i++) {
+                        items.push(vm.pre_dirs[i].show);
+                    }
+                    query['s9s'] = items.join("||");
+                    //前台目录图标
+                    items = [];
+                    for (let i = 0; i < vm.pre_dirs.length; i++) {
+                        items.push(vm.pre_dirs[i].icon);
+                    }
+                    query['s9i'] = items.join("||");
+                    
+                    //生成查询字符串，并请求ajax
+                    query = "&"+makeQuery(query);
+                    $.post("../controller/helpapi.php?method=savesettings", $("#main_form").serialize()+query, function (data) {
+                        if (data.errno == 0) {
+                            dialogRef.getModalBody().html('<span class="text-success">保存成功</span>');
+                            setTimeout(function () {
+                                dialogRef.close();
+                                lazy_reload();
+                            }, 1000);
+                        } else {
+                            dialogRef.getModalBody().html('<span class="text-danger">保存失败</span>');
+                            setTimeout(function () {
+                                dialogRef.close();
+                            }, 1000);
+                        }
+                    }, "json");
+                }
+            }, {
+                label: '关闭',
+                action: function (dialogRef) {
+                    dialogRef.close();
+                }
+            }]
+        });
+    });
+    // 提示设置详情
+    $(".tip").click(function () {
+        BootstrapDialog.show({
+            title: '消息',
+            message: '字段提示：'+$(this).attr("tip")
+        });
+    });
+
+</script>
+</body>
+</html>

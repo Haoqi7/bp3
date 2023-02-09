@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>多账户管理 | bp3</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {#$favicon#}
+
+    {#'/css/bootstrap.min.css'|addCss#}
+    {#'/css/bootstrap-dialog.min.css'|addCss#}
+    {#'/css/general.css'|addCss#}
+    {#'/fonts/font-awesome-4.7.0/css/font-awesome.min.css'|addCss#}
+
+    {#'/js/jquery.min.js'|addJs#}
+    {#'/js/bootstrap.min.js'|addJs#}
+    {#'/js/functions.js'|addJs#}
+    {#'/js/clipboard.min.js'|addJs#}
+    {#'/js/bootstrap-dialog.min.js'|addJs#}
+    {#'/js/vue.min.js'|addJs#}
+
+    <style>
+        input {
+            display: block;
+            width: 100%;
+            min-width: 100px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container" id="app">
+    <br>
+    <h4>账户列表 <a href="{#$grant_multi_url#}">新增账户</a><span class="pull-right"> <a href="./index.php">返回后台首页</a></span>
+    </h4>
+    <br>
+    {#if $error#}<p class="text-danger">错误提示：{#$error#}</p>{#/if#}
+    {#if $disks#}
+    <div style="overflow-x: auto;">
+        <table class="table table-bordered">
+            <tr>
+                <td>
+                    <div class="row">
+                        <div class="col-xs-6"><span class="fs-3 text-success">主账户显示名称：</span></div>
+                        <div class="col-xs-4"><input class="form-control" v-model="main" placeholder="主账户显示名称"/></div>
+                        <div class="col-xs-2"><span class="cursor-pointer text-success" @click="save(1)">保存</span></div>
+                    </div>
+                </td>
+            </tr>
+            <tr v-for="item in disks" :key="item.uk">
+                <td>
+                    <div>
+                        <div class="row">
+                            <div class="col-xs-6"><span class="fs-3 text-success">多账户：{{ item.uk }}：</span></div>
+                            <div class="col-xs-6"><input class="form-control" v-model="item.show_name"
+                                                         :placeholder="'多账户'+item.uk+'显示名称'"/></div>
+                        </div>
+                        <p>百度昵称：{{item.baidu_name}}</p>
+                        <p>授权时间：{{new Date(item.conn_time*1000).format('YYYY-mm-dd HH:mm:ss')}}</p>
+                        <div>
+                            <p><span class="fs-3">绑定目录</span>
+                                <button @click="add(item.uk)" class="btn btn-default pull-right">添加一项</button>
+                            </p>
+                            <div class="row" v-for="(pre_dir,index) in item.pre_dir">
+                                <div class="col-xs-4 pr-0"><input class="form-control" v-model="pre_dir.dir"
+                                                             placeholder="根目录留空即可"/></div>
+                                <div class="col-xs-3 px-0"><input class="form-control" v-model="pre_dir.show"></div>
+                                <div class="col-xs-2 px-0"><img :src="'{#$base_url#}'+pre_dir.icon" height="30px" :path="pre_dir.icon" class="cursor-pointer" title="点击上传" @click="uploadIcon(item.uk,index)"/></div>
+                                <div class="col-xs-2 px-1">
+                                    <span v-if="index!=0" class="cursor-pointer fa fa-arrow-up" @click="moveUp(item.pre_dir,index)" title="向上">&nbsp;</span>
+                                    <span v-if="index!=item.pre_dir.length-1" @click="moveDown(item.pre_dir,index)" class="cursor-pointer fa fa-arrow-down" title="向下">&nbsp;</span>
+                                    <span class="cursor-pointer text-danger fa fa-trash" @click="del(item.uk,index)" title="删除"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-3">
+                            <p><span class="fs-3">前台隐藏文件列表</span>
+                            <input v-model="item.hideFile" class="form-control" placeholder="每个文件都存在fsid，隐藏多个时用逗号分割"/>
+                            <p><span class="fs-3">前台隐藏文件夹列表</span>
+                            <input v-model="item.hideDir" class="form-control" placeholder="填写文件夹绝对路径，多个之间用 || 分割"/>
+                            
+                        </div>
+                        <p class="pt-3">账户操作：
+                            <button @click="del(item.uk)" class="btn btn-sm btn-danger">删除账户</button>
+                            <button @click="save(item.uk)" class="btn btn-sm btn-primary">保存账户设置</button>
+                            <button @click="show(item.uk)" class="btn btn-sm btn-primary">查看token</button>
+                        </p>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <br/>
+    <p>提示：授权时间表示最后刷新时间。</p>
+    <p>提示：不要随意切换授权系统，如果新增账户已经存在，则相当于覆盖。</p>
+    <p>提示：多账户自动刷新token，依赖于定时任务，请添加定时任务：定时访问url：
+    <pre><code>{#$base_url#}/admin/refresh_token_multi.php</code></pre>
+    </p>
+    {#else#}
+    <div>当前还没有绑定额外的账户哦</div>
+    {#/if#}
+    <input type="file" class="hidden" id="uploadDom" accept=".png,.jpg,.gif"/>
+
+</div>
+
+<script>
+
+    let vm = new Vue({
+        el: "#app",
+        data: {
+            main: "",  // 主账户显示名
+            pre_dir_item: {"dir": "", "show": "","icon":"/static/img/icon/folder.png"},
+            disks: {}
+        },
+        methods: {
+            
+            uploadIcon : function(uk,index){
+                $("#uploadDom").trigger("click");
+                let file = document.getElementById('uploadDom');
+                file.onchange = function(){
+                    if(!file.files[0]) {
+                        return
+                    }
+                    if(file.files[0].size>20971520) {
+                        alert('文件不得超过20M')
+                        return
+                    }
+                    var formData = new FormData();
+                    formData.append('uploadFile', file.files[0]);
+                    xhr = new XMLHttpRequest();
+                    xhr.onload = function(){
+                        let responseText = JSON.parse(xhr.responseText);
+                        if(responseText.errno){
+                            error_message(responseText.errmsg);
+                        }else{
+                            success_message(responseText.info);
+                            vm.disks[uk].pre_dir[index].icon = responseText.path;
+                        }
+                    };
+                    xhr.open('post', "../api/ajax.php?module=admin&method=uploadIcon", true);
+                    xhr.send(formData);
+                }
+            },
+            
+            //保存账户设置
+            save: function (uk) {
+                let query = [];
+                query['uk'] = uk;
+                //主账户
+                if (uk === 1) {
+                    query['show_name'] = this.main;
+                }
+                //多账户
+                else {
+                    query['show_name'] = this.disks[uk].show_name;
+                    //目录绑定列表
+                    let pre_dir = this.disks[uk].pre_dir;
+                    let dirs = [];
+                    let shows = [];
+                    let icon = [];
+                    for (let i = 0; i < pre_dir.length; i++) {
+                        dirs.push(pre_dir[i].dir);
+                        shows.push(pre_dir[i].show);
+                        icon.push(pre_dir[i].icon);
+                    }
+                    query['pre_dir'] = dirs.join("||");
+                    query['pre_dir_show'] = shows.join("||");
+                    query['pre_dir_icon'] = icon.join("||");
+                    query['hideFile'] = this.disks[uk].hideFile;
+                    query['hideDir'] = this.disks[uk].hideDir;
+                }
+                //生成query并发送请求
+                $.post("../controller/multi_op.php?method=save", makeQuery(query), function (r) {
+                    if (r.errno) {
+                        error_message(r.errmsg);
+                    } else {
+                        success_message("保存成功");
+                        lazy_reload();
+                    }
+                }, "json");
+            },
+            //添加一项目录
+            add: function (uk) {
+                this.disks[uk].pre_dir.push(clone(this.pre_dir_item));
+            },
+            //删除账户，或删除一项目录
+            del: function (uk, index = 'no') {
+                //删除一项目录
+                if (index !== 'no') {
+                    if (this.disks[uk].pre_dir.length > 1) {
+                        this.disks[uk].pre_dir.splice(index, 1);
+                    } else {
+                        error_message("已经是最后一项啦");
+                    }
+                    return false;
+                }
+                //删除一个账户
+                let check = confirm("操作不可取消，确定吗？");
+                if (!check) {
+                    return false;
+                }
+                $.post("../controller/multi_op.php?method=del", {"uk": uk}, function (r) {
+                    if (r.errno) {
+                        error_message(r.errmsg);
+                    } else {
+                        success_message("删除成功");
+                        lazy_reload();
+                    }
+                }, "json");
+            },
+            moveDown : function(item,index){
+                let del = item.splice(index,1);
+                item.splice(index+1,0,del[0]);
+                this.$forceUpdate();
+            },
+            
+            moveUp : function(item,index){
+                let del = item.splice(index,1);
+                item.splice(index-1,0,del[0]);
+                this.$forceUpdate();
+            },
+            //查看一个账户的token
+            show: function (uk) {
+                let token = this.disks[uk].access_token;
+                BootstrapDialog.show({
+                    title: '当前token如下：',
+                    message: `<textarea id="token" class='br' style="border:0;resize: none;outline: none;width: 100%;">${token}</textarea>`,
+                    closable: false,
+                    buttons: [{
+                        label: '复制 token',
+                        cssClass: 'btn-success',
+                        action: function (dialogRef) {
+                            let x = dialogRef.getModalBody().find("#token")[0];
+                            x.select();
+                            document.execCommand('copy');
+                            if (getSelection().toString() === token) {
+                                dialogRef.getModalBody().html("<p class='text-success'>复制成功！</p>");
+                                setTimeout(function () {
+                                    dialogRef.close();
+                                }, 1000)
+                            } else {
+                                dialogRef.getModalBody().html("<p class='text-danger'>复制失败！</p>");
+                            }
+                        }
+                    }, {
+                        label: '刷新 token',
+                        cssClass: 'btn-primary',
+                        action: function (dialogRef) {
+                            // 请求ajax
+                            $.post("../controller/multi_op.php?method=refresh", {"uk": uk}, function (r) {
+                                if (r.errno) {
+                                    message(r.errmsg, "error");
+                                } else {
+                                    dialogRef.getModalBody().html("<p class='text-success'>token刷新成功</p>");
+                                    lazy_reload(1500);
+                                }
+                            }, "json");
+                        }
+                    }, {
+                        label: '关闭',
+                        action: function (dialogRef) {
+                            dialogRef.close();
+                        }
+                    }]
+                });
+            }
+        },
+        mounted() {
+            let disks = '{#$disks|json_encode#}';
+            disks = JSON.parse(disks);
+            for (let index in disks) {
+                //处理多目录
+                let pre_dir = disks[index]['pre_dir'] || "";
+                pre_dir = pre_dir.split("||");
+                let pre_dir_arr = [];
+                //自定义目录显示名称
+                let pre_dir_show = disks[index]['pre_dir_show'] || "";
+                pre_dir_show = pre_dir_show.split("||");
+                //图标
+                let pre_dir_icon = disks[index]['pre_dir_icon'] || "";
+                pre_dir_icon = pre_dir_icon.split("||");
+                //遍历赋值
+                for (let i = 0; i < pre_dir.length; i++) {
+                    let pre_dir_item = clone(this.pre_dir_item);
+                    pre_dir_item.dir = pre_dir[i];
+                    pre_dir_item.show = pre_dir_show[i];
+                    pre_dir_item.icon = pre_dir_icon[i] ? pre_dir_icon[i] : '/static/img/icon/folder.png';
+                    pre_dir_arr.push(pre_dir_item);
+                }
+                disks[index].pre_dir = pre_dir_arr;
+                //多账户显示名称
+                disks[index]['show_name'] = disks[index]['show_name'] || "";
+            }
+            this.main = '{#$config.control.show_name|default:''#}'; //主账户显示名称
+            this.disks = disks;
+        }
+    });
+
+    // 复制代码
+    $("pre").mouseenter(function (e) {
+        var _that = $(this);
+        _that.css("position", "relative");
+        _that.addClass("activePre");
+        var copyBtn = _that.find('.copyBtn');
+        if (!copyBtn || copyBtn.length <= 0) {
+            var copyBtn = '<span class="copyBtn" style="position:absolute;top:2px;right:2px;z-index:999;padding:2px;font-size:13px;color:black;background-color: white;cursor: pointer;" onclick="copyCode()">Copy</span>';
+            _that.append(copyBtn);
+        }
+    }).mouseleave(function (e) {
+        var _that = $(this);
+        var copyBtn = _that.find('.copyBtn');
+        var copyBtnHover = _that.find('.copyBtn:hover');
+        if (copyBtnHover.length == 0) {
+            copyBtn.remove();
+            _that.removeClass("activePre");
+        }
+    });
+
+    function copyCode() {
+        var activePre = $(".activePre");
+        activePre = activePre[0];
+        var code = activePre.firstChild;
+        if (code.nodeName == "CODE") {
+            activePre = code;
+        }
+        var clone = $(activePre).clone();
+        clone.find('.copyBtn').remove();
+        var clipboard = new ClipboardJS('.copyBtn', {
+            text: function () {
+                return clone.text();
+            }
+        });
+        clipboard.on("success", function (e) {
+            $(".copyBtn").html("Copied!");
+            clipboard.destroy();
+            clone.remove();
+        });
+
+        clipboard.on("error", function (e) {
+            clipboard.destroy();
+            clone.remove();
+        });
+    }
+</script>
+
+</body>
+</html>
